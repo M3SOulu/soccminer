@@ -1,0 +1,9 @@
+from soccminer.comments_miner import CommentsMiner
+from soccminer.proj_comments_main_attr import CommentsMetaAttribute
+from soccminer.proj_comments_comprehensive_attr import ComprehensiveCommentsAttribute
+from soccminer.java_project_meta_attributes import JavaMetaAttribute
+from soccminer.java_proj_miner import JavaMiner
+from soccminer.json_serialization import SerializeSoCCMiner
+from soccminer.source_code_details import PackageInfo, ClassInfo, MethodInfo, InterfaceInfo, StaticBlockInfo, EnumInfo
+from soccminer.comments import CommentInfo, Comment
+
