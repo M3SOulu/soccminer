@@ -47,3 +47,14 @@ Refer scripts :
 2. soccminer_comments_attr.py (for Comprehensive Comments Attributes), 
 3. soccminer_proj_attr.py (for Project Attributes) and 
 4. soccminer_proj_comments_attr.py (for both comprehensive comments and project attributes).
+
+Before execution, do not forget to change the input directories for mining and loading.
+
+NOTE: In demo scripts, loading immediately follows mining in reality it need not be the same. 
+One can mine the repos in one location, zip and transfer to another location, then mined_entities are 
+unzipped and the folder location is given as input to the loading_project call, then the loaded objects
+serve as pipelines for AI applications.
+
+$python3 soccminer_comments.py
+
+Similarly other scripts can be executed.
