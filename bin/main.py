@@ -168,20 +168,16 @@ def main():
         logging.info("Input Load_Project: {}, {}".format(load_proj, load_proj_flag))
 
         if not load_proj_flag and not cm.miner_status_flag:
-            logging.error("PySoccer Mining Failed.")
-            raise Exception
+            raise Exception("SoccMiner Mining Failed.")
         elif load_proj_flag and not cm.load_status:
-            logging.error("PySoccer Loading Failed.")
-            raise Exception
+            raise Exception("SoccMiner Loading Failed.")
         else:
             if not cm.invalid_ing_arg_flag:
-                print("PySoccer Completed Execution")
-
+                print("SoccMiner Completed Execution")
     except Exception as ex:
         error_message = traceback.format_exc()
         logging.error("Unexpected error {} {}".format(error_message, ex))
         sys.exit(1)
-
 
 local_inp_dir = ""
 inp_dir = ""
