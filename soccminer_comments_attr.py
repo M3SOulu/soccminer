@@ -1,0 +1,60 @@
+from soccminer import CommentsMiner
+
+def demo(cm):    
+    ## Loads ComprehensiveCommentsAttribute object for mining level 'comprehensive_comment' that contains
+    ## comprehensive comment attributes for all the entities.
+    for proj in cm.fetch_mined_comment_attributes(): #mined_proj_obj_list
+        ## fetch all comprehensive comments
+        for comprehensive_comments_obj in proj.get_comprehensive_comment_attr():
+            print("Comment content: {}".format(comprehensive_comments_obj.comment_text))
+            print("Comment line #: {}".format(comprehensive_comments_obj.comment_line_no))
+            print("Comment source file: {}".format(comprehensive_comments_obj.file_name))
+            print("Comment preceding code statement type: {}".format(comprehensive_comments_obj.preceding_node))
+            print("Comment preceding code: {}".format(comprehensive_comments_obj.preceding_code))
+            print("Comment succeeding code statement type: {}".format(comprehensive_comments_obj.succeeding_node))
+            print("Comment succeding code: {}".format(comprehensive_comments_obj.succeeding_code))
+            print("Comment parent identifier: {}".format(comprehensive_comments_obj.comment_parent_identifier))
+            print("Comment parent identifier trace: {}".format(comprehensive_comments_obj.comment_trace))
+            print("Comment category: {}".format(comprehensive_comments_obj.comment_category))
+            print("Comment is a first statement in: {}".format(comprehensive_comments_obj.first_element_in))
+            print("Comment is a last statement in: {}".format(comprehensive_comments_obj.last_element_in))
+            print("Comment type: {}".format(comprehensive_comments_obj.comment_type))
+
+        ## fetch package level comprehensive comments
+        print("total comprehensive comments: {}".format(proj.get_comprehensive_package_comment_attr()))
+        for comprehensive_comments_obj in proj.get_comprehensive_package_comment_attr():
+            print("Comment content: {}".format(comprehensive_comments_obj.comment_text))
+            print("Comment line #: {}".format(comprehensive_comments_obj.comment_line_no))
+            print("Comment source file: {}".format(comprehensive_comments_obj.file_name))
+            print("Comment preceding code statement type: {}".format(comprehensive_comments_obj.preceding_node))
+            print("Comment preceding code: {}".format(comprehensive_comments_obj.preceding_code))
+            print("Comment succeeding code statement type: {}".format(comprehensive_comments_obj.succeeding_node))
+            print("Comment succeding code: {}".format(comprehensive_comments_obj.succeeding_code))
+            print("Comment parent identifier: {}".format(comprehensive_comments_obj.comment_parent_identifier))
+            print("Comment parent identifier trace: {}".format(comprehensive_comments_obj.comment_trace))
+            print("Comment category: {}".format(comprehensive_comments_obj.comment_category))
+            print("Comment is a first statement in: {}".format(comprehensive_comments_obj.first_element_in))
+            print("Comment is a last statement in: {}".format(comprehensive_comments_obj.last_element_in))
+            print("Comment type: {}".format(comprehensive_comments_obj.comment_type))
+
+    ## Similarly other entity level comprehensive comments can be mined using
+    ## proj.get_comprehensive_class_comment_attr()  for class level
+    ## proj.get_comprehensive_method_comment_attr()  for method level
+    ## proj.get_comprehensive_interface_comment_attr()  for interface level
+    ## proj.get_comprehensive_static_block_comment_attr()  for static block level
+
+############# Main #############	
+# for mining source code
+# input directory contains Java repository/ies
+mining_obj = CommentsMiner('/home/murali/Downloads/pysoccer_test_data/', 'java', 'comprehensive_comment', False, 'nolog')
+
+# for loading mined entites
+# here the SoCCMiner_Mined_Entities directory is created by the script while mining the source code
+# by default, it will be inside the current working directory during execution.
+# For example, if the script is executed at /usr/desktop then SoCCMiner_Mined_Entities dir
+# will be available at /usr/desktop/SoCCMiner_Mined_Entities
+# NOTE: loading cannot necessarily happen after mining. Repos can be mined in one location, zipped and transfered to another location
+# then, the input dir must point to the unzipped directory containing mined_entities of projects.
+load_obj = CommentsMiner('/home/murali/PycharmProjects/soccminer/SoCCMiner_Mined_Entities/', 'java',
+                         'comprehensive_comment', True, 'nolog')
+demo(load_obj)
