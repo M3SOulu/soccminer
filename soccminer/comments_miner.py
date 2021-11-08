@@ -42,7 +42,7 @@ class CommentsMiner:
                 fh.write("\n".join(params))
         except IOError as ioexception:
             logging.error("Unable to save miner config parameters. Exiting the program.".format(ioexception.strerror))
-            raise
+            print("Unable to save miner config parameters. Exiting the program.".format(ioexception.strerror))
 
     @staticmethod
     def set_mining_level_inp(m_level):
@@ -144,7 +144,7 @@ class CommentsMiner:
         if not self.validate_args(self.url, lang, m_level, load_project, log):
             print("Exiting due to invalid arguments.")
             self.usage_warning()
-            raise Exception("Exiting due to invalid arguments.")
+            sys.exit(1)
 
         self.project = None
         self.invalid_ing_arg_flag = False
@@ -162,6 +162,7 @@ class CommentsMiner:
         self.empty_proj_flag = []  # Contains boolean indicating if a project is empty, i.e., no source code file
         self.soccminer_cfg_file = None
         self.log_dir = SoCCMinerLogger.log_dir
+        self.mined_entity_dir = None
 
         self.log_file_obj = None
 
@@ -315,12 +316,12 @@ class CommentsMiner:
                 print("Project #: {}, Project Name: {}".format(project_dict_ind + 1, project_name))
                 perf_obj = self.project_details_mstr_dict[project_dict_ind]
                 if project_name in self.exception_obj.exception_dict:
-
-                    if self.exception_obj.exception_dict[project_name]:
-                        print("Exception with Project {} with error: {}".format(project_name, ",".join(
-                            self.exception_obj.exception_dict[project_name])))
-                        logging.info("Exception with Project {} with error: {}".format(project_name, ",".join(
-                            self.exception_obj.exception_dict[project_name])))
+                    issue = ",".join(self.exception_obj.exception_dict[project_name]) if \
+                    self.exception_obj.exception_dict[project_name] \
+                        else ",".join(self.exception_obj.warning_dict[project_name])
+                    if issue:
+                        print("Issue with input Project {}: {}".format(project_name, issue))
+                        logging.info("Issue with input Project {} with error: {}".format(project_name, issue))
                     else:
                         self.miner_status_flag = True
 
@@ -675,11 +676,9 @@ class CommentsMiner:
             logging.info("Total Comments processed: {}".format(tot_comments_processed))
             logging.info("Total KLOC processed: {}".format(tot_kloc_processed))
         else:
-            if CommentsMiner.log == 0:
-                print("Exception with Project {} with error: {}".format(project_name, ",".join(
-                    self.exception_obj.exception_dict[project_name])))
-            else:
-                print("Encountered issues while mining source code. Please check log for details.")
+            issue = ",".join(self.exception_obj.exception_dict[project_name]) if self.exception_obj.exception_dict[project_name] \
+                else ",".join(self.exception_obj.warning_dict[project_name])
+            print("Encountered issues while mining Project {} issue: {}".format(project_name, issue))
         self.clear_temp_folders()
 
     def clear_temp_folders(self):
@@ -774,7 +773,7 @@ class CommentsMiner:
                 "Given input project load folder is: soccminer_project_entity \n"
                 "Input Directory for project load: {} \n".format(self.url))
 
-    def load_project_meta(self):
+    def fetch_mined_project_meta(self):
         """
         Fetches Project Meta Attributes specific to programming language,
         for example (Java): Class Name, Signature, Nested Level, Method Name, Signature, etc.,
@@ -791,7 +790,7 @@ class CommentsMiner:
             CommentsMiner.mining_warning_msg(False)
             return proj_meta_attr_obj_list
 
-    def load_comments(self):
+    def fetch_mined_comments(self):
         """
         Fetches Mined Comments.  i.e., text, line no and source file name
         Works for mining level comment(Module input argument), default mining level argument.
@@ -809,7 +808,7 @@ class CommentsMiner:
             CommentsMiner.mining_warning_msg(False)
             return proj_comments_main_attr_obj_list
 
-    def load_comment_attributes(self):
+    def fetch_mined_comment_attributes(self):
         """
         Fetches Project comments and comprehensive comment attributes, i.e., all attributes
         Works for mining level comprehensive_comment(Module input argument), else returns empty list.
@@ -826,7 +825,7 @@ class CommentsMiner:
             CommentsMiner.mining_warning_msg(False)
             return proj_comments_all_attr_obj_list
 
-    def load_project_meta_and_comments(self):
+    def fetch_mined_project_meta_and_comments(self):
         """
         Fetches all Project comments with their attributes, Project attributes (file count, etc.,) and
         Meta-attributes (for java: package/class/interface/method/static block attributes)
