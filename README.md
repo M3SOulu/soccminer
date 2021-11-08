@@ -7,7 +7,7 @@ Not mandatory but it is recommended to create a virtualenv.
 $ virtualenv -p python3 <venv_name> \
 $ source <venv_name>/bin/activate
 
-Clone the repository
+Clone the repository \
 $ git clone https://github.com/M3SOulu/soccminer \
 $ cd soccminer
 
@@ -20,7 +20,7 @@ $ pip3 install -r requirements.txt
 $ pip3 install soccminer
 
 # Usage from commandline
-Usage: python3 soccminer/bin/main.py '/usr/local/repositories_for_analysis/' 'java' 'comment' 'False' 'nolog'
+Usage: python3 bin/main.py '/usr/local/repositories_for_analysis/' 'java' 'comment' 'False' 'nolog'
 
 positional arguments:
 - inp          - Defines the input to the tool. Can be 'local_dir' containing project repositories as sub-directories or 'Git Repo URL'
@@ -43,7 +43,7 @@ positional arguments:
 
 # Usage from API
 Refer scripts :
-1. pysoccer_comments.py (for Comments Meta Attributes), 
-2. pysoccer_comments_attr.py (for Comprehensive Comments Attributes), 
-3. pysoccer_proj_attr.py (for Project Attributes) and 
-4. pysoccer_proj_comments_attr.py (for both comprehensive comments and project attributes).
+1. soccminer_comments.py (for Comments Meta Attributes), 
+2. soccminer_comments_attr.py (for Comprehensive Comments Attributes), 
+3. soccminer_proj_attr.py (for Project Attributes) and 
+4. soccminer_proj_comments_attr.py (for both comprehensive comments and project attributes).
