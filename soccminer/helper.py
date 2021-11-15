@@ -242,7 +242,19 @@ class ASTHelper:
 
 
 class Utility:
-
+    @staticmethod
+    def clear_temp_folders():
+        temp_dir = ''
+        logging.info("Checking temp folders: ")
+        if Platform.is_unix_platform():
+            temp_dir = os.getcwd() + '/soccminer_temp/'
+        elif Platform.is_windows_platform():
+            temp_dir = os.getcwd() + '\\soccminer_temp\\'
+        if os.path.isdir(temp_dir):
+            logging.info("Clearing temp directories and files at {}".format(temp_dir))
+            shutil.rmtree(temp_dir)
+        else:
+            logging.info("No temp folders")
 
     @staticmethod
     def validate_srcml():

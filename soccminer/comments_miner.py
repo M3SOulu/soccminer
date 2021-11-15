@@ -235,7 +235,7 @@ class CommentsMiner:
                 print("Loading unsuccessful")
         if os.path.exists(CommentsMiner.soccminer_cfg_file):
             os.remove(CommentsMiner.soccminer_cfg_file)
-        self.clear_temp_folders()
+        Utility.clear_temp_folders()
 
     def load_after_mining(self):
         print("", sep='', end='', flush=True)
@@ -920,20 +920,7 @@ class CommentsMiner:
             issue = ",".join(self.exception_obj.exception_dict[project_name]) if self.exception_obj.exception_dict[project_name] \
                 else ",".join(self.exception_obj.warning_dict[project_name])
             print("Encountered issues while mining Project {} issue: {}".format(project_name, issue))
-        self.clear_temp_folders()
-
-    def clear_temp_folders(self):
-        temp_dir = ''
-        logging.info("Checking temp folders if any for project {}: ".format(self.project))
-        if Platform.is_unix_platform():
-            temp_dir = os.getcwd() + '/soccminer_temp/'
-        elif Platform.is_windows_platform():
-            temp_dir = os.getcwd() + '\\soccminer_temp\\'
-        if os.path.isdir(temp_dir):
-            logging.info("Clearing temp directories and files at {}".format(temp_dir))
-            shutil.rmtree(temp_dir)
-        else:
-            logging.info("No temp folders for project {}: ".format(self.project))
+            Utility.clear_temp_folders()
 
     def release_obj(self, obj):
         del obj
