@@ -1,10 +1,11 @@
 from soccminer import CommentsMiner
 
+
 def demo(cm):    
-    ## Loads ComprehensiveCommentsAttribute object for mining level 'comprehensive_comment' that contains
-    ## comprehensive comment attributes for all the entities.
+    # Loads ComprehensiveCommentsAttribute object for mining level 'comprehensive_comment' that contains
+    # comprehensive comment attributes for all the entities.
     for proj in cm.fetch_mined_comment_attributes(): #mined_proj_obj_list
-        ## fetch all comprehensive comments
+        # fetch all comprehensive comments
         for comprehensive_comments_obj in proj.get_comprehensive_comment_attr():
             print("Comment content: {}".format(comprehensive_comments_obj.comment_text))
             print("Comment line #: {}".format(comprehensive_comments_obj.comment_line_no))
@@ -20,7 +21,7 @@ def demo(cm):
             print("Comment is a last statement in: {}".format(comprehensive_comments_obj.last_element_in))
             print("Comment type: {}".format(comprehensive_comments_obj.comment_type))
 
-        ## fetch package level comprehensive comments
+        # fetch package level comprehensive comments
         print("total comprehensive comments: {}".format(proj.get_comprehensive_package_comment_attr()))
         for comprehensive_comments_obj in proj.get_comprehensive_package_comment_attr():
             print("Comment content: {}".format(comprehensive_comments_obj.comment_text))
@@ -37,24 +38,25 @@ def demo(cm):
             print("Comment is a last statement in: {}".format(comprehensive_comments_obj.last_element_in))
             print("Comment type: {}".format(comprehensive_comments_obj.comment_type))
 
-    ## Similarly other entity level comprehensive comments can be mined using
-    ## proj.get_comprehensive_class_comment_attr()  for class level
-    ## proj.get_comprehensive_method_comment_attr()  for method level
-    ## proj.get_comprehensive_interface_comment_attr()  for interface level
-    ## proj.get_comprehensive_static_block_comment_attr()  for static block level
+            # Similarly other entity level comprehensive comments can be mined using
+            # proj.get_comprehensive_class_comment_attr()  for class level
+            # proj.get_comprehensive_method_comment_attr()  for method level
+            # proj.get_comprehensive_interface_comment_attr()  for interface level
+            # proj.get_comprehensive_static_block_comment_attr()  for static block level
+
 
 ############# Main #############	
 # for mining source code
 # input directory contains Java repository/ies
-mining_obj = CommentsMiner('/home/murali/Downloads/pysoccer_test_data/', 'java', 'comprehensive_comment', False, 'nolog')
+mining_obj = CommentsMiner(source_url='/home/murali/Downloads/pysoccer_test_data/microsoft_appcenter-sampleapp-android/', m_level='comprehensive_comment')
+demo(mining_obj)
 
-# for loading mined entites
+# for loading already mined entites (i.e., passive loading)
 # here the SoCCMiner_Mined_Entities directory is created by the script while mining the source code
-# by default, it will be inside the current working directory during execution.
-# For example, if the script is executed at /usr/desktop then SoCCMiner_Mined_Entities dir
-# will be available at /usr/desktop/SoCCMiner_Mined_Entities
-# NOTE: loading cannot necessarily happen after mining. Repos can be mined in one location, zipped and transfered to another location
+# by default, it will be in the current working directory during execution.
+# For example, if the script is executed at /usr/desktop/soccminer/ then SoCCMiner_Mined_Entities dir
+# will be available at /usr/desktop/soccminer/SoCCMiner_Mined_Entities
+# NOTE: loading need not happen after mining. Repos can be mined in one location, zipped and transfered to another location
 # then, the input dir must point to the unzipped directory containing mined_entities of projects.
-load_obj = CommentsMiner('/home/murali/PycharmProjects/soccminer/SoCCMiner_Mined_Entities/', 'java',
-                         'comprehensive_comment', True, 'nolog')
+load_obj = CommentsMiner(source_url='/home/murali/PycharmProjects/soccminer/SoCCMiner_Mined_Entities/microsoft_appcenter-sampleapp-android/', m_level='comprehensive_comment', direct_load=True)
 demo(load_obj)

@@ -503,7 +503,7 @@ class InterfaceInfo:
         self.interface_method_info.append(method_obj)
 
 
-class PackageInfo():
+class PackageInfo:
     def __init__(self):
         self.package_detail = {}
         self.package_name = None
@@ -560,6 +560,7 @@ class PackageInfo():
         all_construct_info["CLASS_INFO"] = self.class_info
         all_construct_info["INTERFACE_INFO"] = self.interface_info
         all_construct_info["METHOD_INFO"] = self.method_info
+        all_construct_info["ENUM_INFO"] = self.enum_info
         package_all_comments = self.get_package_info_comments()
         for class_obj in self.class_info:
             package_all_comments.extend(class_obj.get_all_comments_from_class())
@@ -569,6 +570,9 @@ class PackageInfo():
 
         for method_obj in self.method_info:
             package_all_comments.extend(method_obj.get_all_comments_from_method())
+
+        for enum_obj in self.enum_info:
+            package_all_comments.extend(enum_obj.get_all_comments_from_enum())
 
         all_construct_info["CLASS_INFO"] = self.class_info
         all_construct_info["INTERFACE_INFO"] = self.interface_info
@@ -588,6 +592,9 @@ class PackageInfo():
 
         for static_block_obj in self.static_block_info:
             package_all_comments.extend(static_block_obj.get_static_block_info_comments())
+
+        for enum_obj in self.enum_info:
+            package_all_comments.extend(enum_obj.get_all_comments_from_enum())
 
         return package_all_comments
 
@@ -628,6 +635,128 @@ class PackageInfo():
 
     def set_package_line_no(self,package_line_no):
         self.package_line_no = package_line_no
+
+###
+
+
+class FileInfo:
+    def __init__(self):
+        self.file_detail = {}
+        self.source_file_name = None
+        self.file_level_comments = []  # Comments in a file which are outside any construct such as class, interface, etc.,
+        self.class_info = []
+        self.enum_info = []
+        self.interface_info = []
+        self.method_info = []
+        self.static_block_info = []
+        self.file_loc = 0
+        self.total_comments = 0
+
+    def append_file_static_block_info(self, static_block_obj):
+        self.static_block_info.append(static_block_obj)
+
+    def get_file_static_block(self):
+        return self.static_block_info
+
+    def get_file_comments_count(self):
+        return self.total_comments
+
+    def get_file_loc(self):
+        return self.file_loc
+
+    def set_file_loc(self, loc):
+        self.file_loc = loc
+
+    def get_file_source(self):
+        return self.source_file_name
+
+    def set_file_source(self, filename):
+        self.source_file_name = filename
+
+    def set_file_comments_count(self, comments_count):
+        self.total_comments = comments_count
+
+    def get_file_class_info(self):
+        return self.class_info
+
+    def get_file_interface_info(self):
+        return self.interface_info
+
+    def get_file_method_info(self):
+        return self.method_info
+
+    def get_file_info_comments(self):  # comments in a file but outside all entities
+        return self.file_level_comments
+
+    def get_all_info(self):
+        all_construct_info = {}
+        all_construct_info["FILE_NAME"] = self.source_file_name
+        all_construct_info["CLASS_INFO"] = self.class_info
+        all_construct_info["INTERFACE_INFO"] = self.interface_info
+        all_construct_info["METHOD_INFO"] = self.method_info
+        file_all_comments = self.get_file_info_comments()
+        for class_obj in self.class_info:
+            file_all_comments.extend(class_obj.get_all_comments_from_class())
+
+        for interface_obj in self.interface_info:
+            file_all_comments.extend(interface_obj.get_all_comments_from_interface())
+
+        for method_obj in self.method_info:
+            file_all_comments.extend(method_obj.get_all_comments_from_method())
+
+        return all_construct_info
+
+    def get_all_comments_from_file(self):
+        file_all_comments = self.get_file_info_comments()
+        for class_obj in self.class_info:
+            file_all_comments.extend(class_obj.get_all_comments_from_class())
+
+        for interface_obj in self.interface_info:
+            file_all_comments.extend(interface_obj.get_all_comments_from_interface())
+
+        for method_obj in self.method_info:
+            file_all_comments.extend(method_obj.get_all_comments_from_method())
+
+        for static_block_obj in self.static_block_info:
+            file_all_comments.extend(static_block_obj.get_static_block_info_comments())
+
+        for enum_obj in self.enum_info:
+            file_all_comments.extend(enum_obj.get_all_comments_from_enum())
+
+        return file_all_comments
+
+    def get_file_info(self):
+        self.file_detail["FILE_SOURCE"] = self.source_file_name
+        self.file_detail["FILE_LOC"] = self.file_loc
+        self.file_detail["CLASS_INFO"] = self.class_info
+        self.file_detail["INTERFACE_INFO"] = self.interface_info
+        self.file_detail["METHOD_INFO"] = self.method_info
+        self.file_detail["STATIC_BLOCK_INFO"] = self.static_block_info
+        self.file_detail["ENUM_INFO"] = self.enum_info
+        return self.file_detail
+
+    def get_file_info_and_comments(self):
+        file_meta_info_and_comments = {}
+        file_meta_info_and_comments["FILE_META"] = self.get_file_info()
+        file_meta_info_and_comments["FILE_COMMENTS"] = self.get_file_info_comments()
+        file_meta_info_and_comments["FILE_ALL_COMMENTS"] = self.get_all_comments_from_file()
+        return file_meta_info_and_comments
+
+    def append_file_level_comments(self, comment_obj):
+        self.file_level_comments.append(comment_obj)
+
+    def append_class_info(self, class_info_obj):
+        self.class_info.append(class_info_obj)
+
+    def append_enum_info(self, enum_info_obj):
+        self.enum_info.append(enum_info_obj)
+
+    def append_interface_info(self, interface_info_obj):
+        self.interface_info.append(interface_info_obj)
+
+    def append_method_info(self, method_info_obj):
+        self.method_info.append(method_info_obj)
+###
 
 
 class Entity:

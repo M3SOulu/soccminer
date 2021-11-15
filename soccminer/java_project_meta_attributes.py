@@ -1,6 +1,31 @@
 from soccminer.project_attributes import ProjectAttributes
 
 
+class JavaFileMeta:
+    def __init__(self):
+        self.source_file_name = None
+        self.file_loc = None
+        self.total_comments = None
+
+    def get_file_name(self):
+        return self.source_file_name
+
+    def get_file_loc(self):
+        return self.file_loc
+
+    def set_file_loc(self, loc):
+        self.file_loc = loc
+
+    def set_file_name(self, filename):
+        self.source_file_name = filename
+
+    def set_file_comment_count(self, comment_count):
+        self.total_comments = comment_count
+
+    def get_file_comment_count(self):
+        return self.total_comments
+
+
 class JavaPackageMeta:
     def __init__(self):
         self.package_name = None
@@ -279,6 +304,7 @@ class JavaStaticBlockMeta:
 
 class JavaMetaAttribute(ProjectAttributes):
     def __init__(self, project_instance):
+        self.source_file_count = len(project_instance.get_files())
         self.package_count = len(project_instance.get_packages())
         self.class_count = len(project_instance.get_classes())
         self.method_count = len(project_instance.get_methods())
@@ -295,6 +321,15 @@ class JavaMetaAttribute(ProjectAttributes):
                 :rtype: int
         """
         return self.package_count
+
+    def get_file_count(self):
+        """
+        Returns the count of packages in the Java project.
+                :param: None
+                :returns: Count of packages in the project
+                :rtype: int
+        """
+        return self.source_file_count
 
     def get_class_count(self):
         """
@@ -340,6 +375,23 @@ class JavaMetaAttribute(ProjectAttributes):
                 :rtype: int
         """
         return self.static_block_count
+
+    def get_file_meta_attr(self):
+        """
+        Fetches File Meta Attributes for all source files in a project.
+        for example (Java): Source File name, File LOC etc.,
+                :param: None
+                :returns: List of :class: JavaFileMeta objects
+                :rtype: list
+        """
+        file_meta = []
+        for source_file_obj in self.project_instance.get_packages():
+            file_obj = JavaFileMeta()
+            file_obj.set_file_name(source_file_obj.get_file_name())
+            file_obj.set_file_loc(source_file_obj.get_file_loc())
+            file_obj.set_file_comment_count(source_file_obj.get_file_comment_count())
+            file_meta.append(file_obj)
+        return file_meta
 
     def get_package_meta_attr(self):
         """

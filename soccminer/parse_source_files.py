@@ -6,7 +6,6 @@ import logging.handlers
 import glob
 from soccminer.environment import Platform
 import traceback
-import tracemalloc
 import gc
 
 
@@ -72,6 +71,8 @@ class SourceFiles:
                 logging.debug("To be converted AST file: {}".format(srcml_xml_file))
                 srcml_cd = None
                 process = None
+                print('\r Preparing source files for mining, completed for {}/{}'.format(src_file_count, len(self.files)), sep='', end='',
+                      flush=True)
                 try:
                     process = subprocess.Popen(['srcml', code_file, "-o", srcml_xml_file], stdout=subprocess.PIPE,
                                                stderr=subprocess.PIPE)

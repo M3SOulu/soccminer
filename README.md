@@ -13,32 +13,31 @@ $ cd soccminer
 
 Install the dependencies.
 - srcML installation - Install the appropriate srcML client corresponding to your OS (Linux/Windows). https://www.srcml.org/#download
-- soccminer dependencies - Install the soccminer dependencies. 
 
-$ pip3 install -r requirements.txt
-
+- Installing soccminer will install the dependencies and then the soccminer package. \
 $ pip3 install soccminer
 
 # Usage from commandline
-Usage: python3 bin/main.py '/usr/local/repositories_for_analysis/' 'java' 'comment' 'False' 'nolog'
+Usage: python3 bin/main.py -input /usr/local/repository_for_analysis/ -level comment
 
-positional arguments:
-- inp          - Defines the input to the tool. Can be 'local_dir' containing project repositories as sub-directories or 'Git Repo URL'
+Options:
+- input          - Defines the input to the tool. (**Mandaory argument**) Can be 'local_dir' containing project repositories as sub-directories or 'Git Repo URL'.  
 		
 - language      - The programming language of the project, for now only java project are handled by SoCCMiner
 
-- mining_level  - Defines the mining/project entity loading level. Can be, 
+- level  - Defines the mining/project entity loading level. Can be, 
   - 'comment' to mine/load basic comment info
   - 'comprehensive_comment' to mine/load comprehensive comment attributes
   - 'project' to mine/load project attributes)
   - 'all' (for project and comprehensive attributes) 
-  - NOTE: While loading entities with load_project input argument set to True, SoCCMiner expects the same mining level with which the 
+  - **NOTE:** While loading entities with load_project input argument set to True, SoCCMiner expects the same mining level with which the 
                     project was mined.
 		   
-- load_project  - If True, loads project entities from the mined entities directory containing the soccminer serialized json files.
+- direct_load  - If True, loads project entities from the mined entities directory containing the soccminer serialized json files.
                    If False, mines source code projects for comments, source code entities and their attributes according to the mining level input 
   
-- log           - Defines the logging level. Can be one of nolog(NOLOG), info(INFO), debug(DEBUG)
+- log           - Defines the logging level. Can be one of nolog(NOLOG), info(INFO), debug(DEBUG).
+                **NOTE:** Enabling log creates very huge file log file for huge source code repositories. Enable it for debugging after ensuring enough disk space is available.
 
 
 # Usage from API
@@ -50,7 +49,7 @@ Refer scripts :
 
 Before execution, do not forget to change the input directories for mining and loading.
 
-NOTE: In demo scripts, loading immediately follows mining in reality it need not be the same. 
+**NOTE:** In demo scripts, loading immediately follows mining in reality it need not be the same. 
 One can mine the repos in one location, zip and transfer to another location, then mined_entities are 
 unzipped and the folder location is given as input to the loading_project call, then the loaded objects
 serve as pipelines for AI applications.

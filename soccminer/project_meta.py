@@ -1,9 +1,10 @@
 from soccminer.environment import Platform
-from soccminer.source_code_details import PackageInfo, ClassInfo, InterfaceInfo, MethodInfo, StaticBlockInfo, EnumInfo
+from soccminer.source_code_details import PackageInfo, ClassInfo, InterfaceInfo, MethodInfo, StaticBlockInfo, EnumInfo, FileInfo
 from soccminer.comments import CommentInfo
 from soccminer.json_serialization import SerializeSoCCMiner
 from soccminer.process_parameters import ProcessParameter
 from soccminer.parse_source_files import SourceFiles
+from soccminer.helper import Utility
 import logging
 import os
 
@@ -48,12 +49,14 @@ class ProjectMeta(Project):
 class JavaProjectMeta(ProjectMeta):
     def __init__(self, source_url: str):
         self.package_info = []  # For holding package details in a project, i.e., package objects
+        self.master_file_list = []
         self.master_class_list = []
         self.master_method_list = []
         self.master_enum_list = []
         self.master_interface_list = []
         self.master_static_block_list = []
         self.master_comment_list = []
+        self.file_level_comment_list = []
         self.package_level_comment_list = []
         self.class_level_comment_list = []
         self.method_level_comment_list = []
@@ -70,6 +73,9 @@ class JavaProjectMeta(ProjectMeta):
     def append_class_level_comment(self, comment_obj):
         self.class_level_comment_list.append(comment_obj)
 
+    def append_file_level_comment(self, comment_obj):
+        self.file_level_comment_list.append(comment_obj)
+
     def append_enum_level_comment(self, comment_obj):
         self.enum_level_comment_list.append(comment_obj)
 
@@ -84,6 +90,9 @@ class JavaProjectMeta(ProjectMeta):
 
     def append_package_info(self, package_info_obj):
         self.package_info.append(package_info_obj)
+
+    def append_project_file(self, file_obj):
+        self.master_file_list.append(file_obj)
 
     def append_project_class(self, class_obj):
         self.master_class_list.append(class_obj)
@@ -105,6 +114,9 @@ class JavaProjectMeta(ProjectMeta):
 
     def get_packages(self):
         return self.package_info
+
+    def get_files(self):
+        return self.master_file_list
 
     def get_classes(self):
         return self.master_class_list
@@ -133,34 +145,47 @@ class JavaProjectMeta(ProjectMeta):
             logging.debug("fetch_project_loc: Project LOC: {}".format(project_loc))
         return project_loc
 
-    def fetch_entity_count(self, entity_dir):
-        logging.debug("fetch_entity_count() begins for {}".format(entity_dir))
-        entity_count = 0
-        if os.path.isdir(entity_dir):
-            src_file_obj = SourceFiles(entity_dir)
-            src_file_obj.fetch_source_files(entity_dir, 'json')
-            entity_count = len(src_file_obj.get_files())
-            del src_file_obj
-        return entity_count
+    def fetch_avg_file_loc(self):
+        file_loc = 0
+        for file_obj in self.get_files():
+            file_loc += file_obj.get_file_loc()
+        file_len = 1 if len(self.get_files()) == 0 else len(self.get_files())
+        avg_file_loc = file_loc / file_len
+        logging.debug("fetch_avg_file_loc: Avg file LOC: {}".format(avg_file_loc))
+        return avg_file_loc
 
     def populate_entity_stats(self, proj_dir):
         mined_entity_stats = {}
         comment_dir_list = []
-        class_count = 0
 
         miner_params = ProcessParameter.fetch_program_parameters()
 
         # loading package details
         mined_entity_stats[type(PackageInfo()).__name__] = len(self.get_packages())
+        # comments at file level instead of package level
+        # comments outside other entities in a source file are associated with file
         if miner_params['mining_level'] != 3:
-            comments_dir = proj_dir + '/' + type(PackageInfo()).__name__ + '/comments/'
+            comments_dir = proj_dir + '/' + type(FileInfo()).__name__ + '/comments/'
             comment_dir_list.append(comments_dir)
         logging.debug("populate_entity_stats() - Packages: {}".format(len(self.get_packages())))
 
+        # loading file details
+        file_count = 0
+        if miner_params['mining_level'] == 3 or miner_params['mining_level'] == 4:
+            attr_dir = proj_dir + '/' + type(FileInfo()).__name__ + '/attributes/'
+            file_count = Utility.fetch_entity_count(attr_dir, 'json')
+            mined_entity_stats[type(FileInfo()).__name__] = file_count
+        #if miner_params['mining_level'] != 3:
+        #    comments_dir = proj_dir + '/' + type(FileInfo()).__name__ + '/comments/'
+        #    comment_dir_list.append(comments_dir)
+        #logging.debug("populate_entity_stats() - Classes: {}".format(file_count))
+
+
         # loading class details
+        class_count = 0
         if miner_params['mining_level'] == 3 or miner_params['mining_level'] == 4:
             attr_dir = proj_dir + '/' + type(ClassInfo()).__name__ + '/attributes/'
-            class_count = self.fetch_entity_count(attr_dir)
+            class_count = Utility.fetch_entity_count(attr_dir, 'json')
             mined_entity_stats[type(ClassInfo()).__name__] = class_count
         if miner_params['mining_level'] != 3:
             comments_dir = proj_dir + '/' + type(ClassInfo()).__name__ + '/comments/'
@@ -171,7 +196,7 @@ class JavaProjectMeta(ProjectMeta):
         enum_count = 0
         if miner_params['mining_level'] == 3 or miner_params['mining_level'] == 4:
             attr_dir = proj_dir + '/' + type(EnumInfo()).__name__ + '/attributes/'
-            enum_count = self.fetch_entity_count(attr_dir)
+            enum_count = Utility.fetch_entity_count(attr_dir, 'json')
             mined_entity_stats[type(EnumInfo()).__name__] = enum_count
         if miner_params['mining_level'] != 3:
             comments_dir = proj_dir + '/' + type(EnumInfo()).__name__ + '/comments/'
@@ -182,7 +207,7 @@ class JavaProjectMeta(ProjectMeta):
         interface_count = 0
         if miner_params['mining_level'] == 3 or miner_params['mining_level'] == 4:
             attr_dir = proj_dir + '/' + type(InterfaceInfo()).__name__ + '/attributes/'
-            interface_count = self.fetch_entity_count(attr_dir)
+            interface_count = Utility.fetch_entity_count(attr_dir, 'json')
             mined_entity_stats[type(InterfaceInfo()).__name__] = interface_count
         if miner_params['mining_level'] != 3:
             comments_dir = proj_dir + '/' + type(InterfaceInfo()).__name__ + '/comments/'
@@ -193,7 +218,7 @@ class JavaProjectMeta(ProjectMeta):
         method_count = 0
         if miner_params['mining_level'] == 3 or miner_params['mining_level'] == 4:
             attr_dir = proj_dir + '/' + type(MethodInfo()).__name__ + '/attributes/'
-            method_count = self.fetch_entity_count(attr_dir)
+            method_count = Utility.fetch_entity_count(attr_dir, 'json')
             mined_entity_stats[type(MethodInfo()).__name__] = method_count
         if miner_params['mining_level'] != 3:
             comments_dir = proj_dir + '/' + type(MethodInfo()).__name__ + '/comments/'
@@ -201,18 +226,19 @@ class JavaProjectMeta(ProjectMeta):
         logging.debug("populate_entity_stats() - Methods: {}".format(method_count))
 
         # loading static block details
+        static_block_count = 0
         if miner_params['mining_level'] == 3 or miner_params['mining_level'] == 4:
             attr_dir = proj_dir + '/' + type(StaticBlockInfo()).__name__ + '/attributes/'
-            static_block_count = self.fetch_entity_count(attr_dir)
+            static_block_count = Utility.fetch_entity_count(attr_dir, 'json')
             mined_entity_stats[type(StaticBlockInfo()).__name__] = static_block_count
         if miner_params['mining_level'] != 3:
             comments_dir = proj_dir + '/' + type(StaticBlockInfo()).__name__ + '/comments/'
             comment_dir_list.append(comments_dir)
-        logging.debug("populate_entity_stats() - StaticBlocks: {}".format(method_count))
+        logging.debug("populate_entity_stats() - StaticBlocks: {}".format(static_block_count))
 
         mined_entity_stats[type(CommentInfo()).__name__] = 0
         for comment_dir in comment_dir_list:
-            comment_count = self.fetch_entity_count(comment_dir)
+            comment_count = Utility.fetch_entity_count(comment_dir, 'json')
             mined_entity_stats[type(CommentInfo()).__name__] += comment_count
         logging.debug("populate_entity_stats() - Comments: {}".format(mined_entity_stats[type(CommentInfo()).__name__]))
         return mined_entity_stats
@@ -230,6 +256,8 @@ class JavaProjectMeta(ProjectMeta):
         static_block_comments_dir = None
         enum_attr_dir = None
         enum_comments_dir = None
+        file_attr_dir = None
+        file_comments_dir = None
 
         if Platform.is_unix_platform():
             package_attr_dir = proj_dir + '/' + type(PackageInfo()).__name__ + '/attributes/'
@@ -244,6 +272,8 @@ class JavaProjectMeta(ProjectMeta):
             static_block_comments_dir = proj_dir + '/' + type(StaticBlockInfo()).__name__ + '/comments/'
             enum_attr_dir = proj_dir + '/' + type(EnumInfo()).__name__ + '/attributes/'
             enum_comments_dir = proj_dir + '/' + type(EnumInfo()).__name__ + '/comments/'
+            file_attr_dir = proj_dir + '/' + type(FileInfo()).__name__ + '/attributes/'
+            file_comments_dir = proj_dir + '/' + type(FileInfo()).__name__ + '/comments/'
         elif Platform.is_windows_platform():
             package_attr_dir = proj_dir + '\\' + type(PackageInfo()).__name__ + '\\attributes\\'
             package_comments_dir = proj_dir + '\\' + type(ClassInfo()).__name__ + '\\comments\\'
@@ -257,9 +287,11 @@ class JavaProjectMeta(ProjectMeta):
             static_block_comments_dir = proj_dir + '\\' + type(StaticBlockInfo()).__name__ + '\\comments\\'
             enum_attr_dir = proj_dir + '\\' + type(EnumInfo()).__name__ + '\\attributes\\'
             enum_comments_dir = proj_dir + '\\' + type(EnumInfo()).__name__ + '\\comments\\'
+            file_attr_dir = proj_dir + '\\' + type(FileInfo()).__name__ + '\\attributes\\'
+            file_comments_dir = proj_dir + '\\' + type(FileInfo()).__name__ + '\\comments\\'
 
         comment_dir_list = []
-        level_mapping_dict = {1:'comment', 2:'comprehensive_comment', 3:'project', 4:'all', 0:'none'}
+        level_mapping_dict = {1: 'comment', 2: 'comprehensive_comment', 3: 'project', 4: 'all', 0: 'none'}
         miner_params = ProcessParameter.fetch_program_parameters()
         logging.debug("Loading {} from json begins for proj_dir: {}".format(proj_dir, entity))
 
@@ -274,37 +306,44 @@ class JavaProjectMeta(ProjectMeta):
                 src_file_dir = proj_dir + '\\' + proj_dir.split("/")[-1] + '.json'
 
             if not os.path.isfile(src_file_dir):
-                print("Missing project_source_meta json.  Unable to load project. \n"
-                                "Please check your input folder containing mined entities for project {}".format(self.get_project_name()))
-                raise Exception("Missing project_source_meta json.  Unable to load project. \n"
-                                "Please check your input folder containing mined entities for project {}".format(self.get_project_name()))
+                #print("Missing project_source_meta json.  Unable to load project. \n"
+                #                "Please check your input folder containing mined entities for project {}".format(self.get_project_name()))
+                exception_msg = "Missing project_source_meta json.  Unable to load project. \n " \
+                                "Please check your input folder containing mined entities for project {}".format(self.get_project_name())
+                #raise Exception(exception_msg)
+                return exception_msg
+
             construct_info = SerializeSoCCMiner.load_from_json_file(src_file_dir)
             src_file_obj = SourceFiles(proj_dir)
 
             #  since there will be only one src_file_info json for one project
             for item_to_load in src_file_and_proj_items:
                 if item_to_load not in construct_info[0]:
-                    print(
-                        "Invalid json to load project. Does not contain {} for project {}".format(item_to_load, self.get_project_name()))
-                    raise Exception(
-                        "Invalid json to load project. Does not contain {} for project {}".format(item_to_load, self.get_project_name()))
+                    #print(
+                    #    "Invalid json to load project. Does not contain {} for project {}".format(item_to_load, self.get_project_name()))
+                    #raise Exception(
+                    #    "Invalid json to load project. Does not contain {} for project {}".format(item_to_load, self.get_project_name()))
+                    exception_msg = "Invalid json to load project. Does not contain {} for project {}".format(item_to_load, self.get_project_name())
+                    return exception_msg
 
             src_file_obj.loc = construct_info[0]['Entity_Project_Directory']
             src_file_obj.files = construct_info[0]['Source_Files_List']
             src_file_obj.cd_file_xml_mapping_dict = construct_info[0]['Source_Xml_Mapping_Dict']
 
             if self.get_project_name() != construct_info[0]['Serialized_Project_Name']:
-                print("Corrupted JSON. Input Load_Project workflow's, Project Name {}  \n" \
+                exception_msg = ("Corrupted JSON. Input Load_Project workflow's, Project Name {}  \n" 
                                                 " does not match with serialized project name {}"
                             "".format(self.get_project_name(), construct_info[0]['Serialized_Project_Name']))
-                raise Exception("Corrupted JSON. Input Load_Project workflow's, Project Name {}  \n" \
-                                                " does not match with serialized project name {}"
-                            "".format(self.get_project_name(), construct_info[0]['Serialized_Project_Name']))
+                return exception_msg
+                #raise Exception("Corrupted JSON. Input Load_Project workflow's, Project Name {}  \n" \
+                #                                " does not match with serialized project name {}"
+                #            "".format(self.get_project_name(), construct_info[0]['Serialized_Project_Name']))
             elif miner_params['mining_level'] != construct_info[0]['Serialized_Mining_Level']:
-                print("Project Load failed as Load_Level ({}) does not match with serialized project's Mining_Level ({}) for project {}"
+                exception_msg = ("Project Load failed as Load_Level ({}) does not match with serialized project's Mining_Level ({}) for project {}"
                       "".format(level_mapping_dict[miner_params['mining_level']], level_mapping_dict[construct_info[0]['Serialized_Mining_Level']], self.get_project_name()))
-                raise Exception("Project Load failed as Load_Level ({}) does not match with serialized project's Mining_Level ({}) for project {}"
-                      "".format(level_mapping_dict[miner_params['mining_level']], level_mapping_dict[construct_info[0]['Serialized_Mining_Level']], self.get_project_name()))
+                return exception_msg
+                #raise Exception("Project Load failed as Load_Level ({}) does not match with serialized project's Mining_Level ({}) for project {}"
+                #      "".format(level_mapping_dict[miner_params['mining_level']], level_mapping_dict[construct_info[0]['Serialized_Mining_Level']], self.get_project_name()))
 
             self.set_project_loc(construct_info[0]['Serialized_Project_KLOC'] * 1000)
             self.set_source_file_info(src_file_obj)
@@ -328,6 +367,24 @@ class JavaProjectMeta(ProjectMeta):
                     self.package_level_comment_list.extend(comment_info)
                 logging.debug("load_project_from_json() - {}: {}".format("comment", len(self.package_level_comment_list)))
             logging.debug("load_project_from_json() - {}: {}".format(entity, len(self.get_packages())))
+
+        if entity == "file" or entity == "project":
+            # loading package details
+            # File info is required at all param levels as it is used to calculate project loc, KLOC
+            construct_info = SerializeSoCCMiner.load_from_json_file(file_attr_dir)
+            for file_info_dict in construct_info:
+                file_obj = FileInfo()
+                file_obj.set_file_source(file_info_dict['Source_File'])
+                file_obj.set_file_loc(file_info_dict['File_LOC'])
+                file_obj.set_file_comments_count(file_info_dict['File_Comments_Count'])
+                self.append_project_file(file_obj)
+            if miner_params['mining_level'] != 3:
+                comment_info = SerializeSoCCMiner.load_comment_info(file_comments_dir)
+                if len(comment_info) > 0:
+                    self.master_comment_list.extend(comment_info)
+                    self.file_level_comment_list.extend(comment_info)
+                logging.debug("load_project_from_json() - {}: {}".format("comment", len(self.file_level_comment_list)))
+            logging.debug("load_project_from_json() - {}: {}".format(entity, len(self.get_files())))
 
         if entity == "class" or entity == "project":
             # loading class details
@@ -405,6 +462,7 @@ class JavaProjectMeta(ProjectMeta):
                     method_obj.set_method_specifier(method_info_dict['Method_Specifier'])
                     method_obj.set_method_signature(method_info_dict['Method_Signature'])
                     method_obj.set_method_category(method_info_dict['Method_Category'])
+                    method_obj.set_method_category(method_info_dict['Method_Param_Count'])
                     method_obj.set_method_loc(method_info_dict['Method_LOC'])
                     method_obj.set_method_line_no(method_info_dict['Method_Line_No'])
                     method_obj.set_method_source(method_info_dict['Method_Source_File'])
@@ -435,10 +493,4 @@ class JavaProjectMeta(ProjectMeta):
                 logging.debug("load_project_from_json() - {}: {}".format("comment", len(self.static_block_level_comment_list)))
             logging.debug("load_project_from_json() - {}: {}".format(entity, len(self.get_static_blocks())))
 
-        #if entity == "comment" or entity == "project":
-        #    for comment_dir in comment_dir_list:
-        #        comment_info = SerializeSoCCMiner.load_comment_info(comment_dir)
-        #        if len(comment_info) > 0:
-        #            self.master_comment_list.extend(comment_info)
-        #        logging.debug("load_project_from_json() - {}: {}".format(entity, len(self.fetch_comments())))
-
+        return "success"

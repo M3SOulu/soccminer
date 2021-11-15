@@ -1,6 +1,6 @@
 from soccminer.parse_source_files import SourceFiles
 from soccminer.parse_source_files import validate_loc
-from soccminer.source_code_details import Entity, ClassInfo, PackageInfo, MethodInfo, StaticBlockInfo, InterfaceInfo, EnumInfo
+from soccminer.source_code_details import Entity, ClassInfo, PackageInfo, MethodInfo, StaticBlockInfo, InterfaceInfo, EnumInfo, FileInfo
 from soccminer.comments import CommentInfo
 from soccminer.srcml import SourceML
 from soccminer.process_parameters import ProcessParameter
@@ -143,6 +143,8 @@ class XmlProperties:
         self.xml_file_num = None
         self.existing_pckg_serialization_url = None
         self.logger = None
+        self.file_obj = None
+        self.all_cmnts_cntr = 0
         self.xml_file = xml_file
 
         # fetch the program parameters set in the driver module CommentsMiner
@@ -327,6 +329,9 @@ class XmlProperties:
     def is_block_element(self, node):
         return self.get_element_tag(node) == XmlProperties.block_ele
 
+    def is_file_entity(self, node):
+        return node == "File"
+
     def is_package_initialization_element(self, element):
         if type(element) == str:
             return element == "PACKAGE_INITIALIZATION"
@@ -417,7 +422,8 @@ class XmlProperties:
     def populate_instance(self, element):
         entity_obj = Entity()
         # instance_obj.set_instance_element(element)
-        entity_obj.set_instance_element_line(self.fetch_element_line_no(element))
+        if type(element) != str:
+            entity_obj.set_instance_element_line(self.fetch_element_line_no(element))
         entity_obj.set_construct_instance_obj(self.fetch_instance(element))
         entity_obj.set_instance_type(type(entity_obj.get_construct_instance_obj()).__name__)
         if entity_obj.get_instance_type() in self.entity_counter:
@@ -448,15 +454,20 @@ class XmlProperties:
             entity_identifier = instance_identifier + entity_obj.get_instance_type() + '_' + str(self.xml_file_num) \
                                 + '_' + str(self.entity_counter[entity_obj.get_instance_type()])
             entity_obj.set_identifier(entity_identifier)
-            self.logger.debug("Setting instance_identifier for element {} as {}".format(
-                self.get_element_tag(element), entity_identifier))
+            self.logger.debug("Setting instance_identifier for element {} as {}"
+                              "".format(self.get_element_tag(element), entity_identifier))
         return entity_obj
 
     def fetch_parent_instance(self):
         return self.parent_instance
 
     def fetch_instance(self, element):
-        if self.is_class_element(element):
+        if type(element) == str:
+            if self.is_file_entity(element):
+                return FileInfo()
+            elif self.is_package_initialization_element(element):
+                return PackageInfo()
+        elif self.is_class_element(element):
             return ClassInfo()
         elif self.is_function_element(element) or self.is_constructor_element(element) or self.is_function_decl_element(element):
             return MethodInfo()
@@ -516,6 +527,14 @@ class XmlProperties:
         self.xml_file_num = xml_file_num
         self.src_file_name = src_file_name
         self.package_instance = None
+
+        # FileInfo entity
+        file_instance_obj = self.populate_instance("File")
+        self.file_obj = file_instance_obj.get_construct_instance_obj()
+        self.file_obj.source_file_name = src_file_name
+        self.file_obj.file_loc = self.fetch_construct_loc(src_file_name)
+        self.logger.debug("File obj loc: {}, {}".format(self.file_obj.source_file_name, self.file_obj.file_loc))
+
         self.set_parent_instance("PACKAGE_INITIALIZATION")
         comments_before_package = []
         for ele in self.get_children_iter(self.root):
@@ -541,7 +560,9 @@ class XmlProperties:
                 self.logger.debug("Fetching file loc which contributes to Project KLOC")
                 entity_obj = self.parent_instance_dict[self.fetch_element_line_no(ele)]
                 if self.existing_package_flag:
-                    existing_pckg_loc = self.package_instance.get_package_loc() + self.fetch_construct_loc(xml_file_name)
+                    file_loc = self.file_obj.file_loc
+                    self.logger.debug("FILE LOC: {}".format(file_loc))
+                    existing_pckg_loc = self.package_instance.get_package_loc() + file_loc
                     existing_pckg_source = self.package_instance.get_package_source()
                     existing_pckg_line_no = self.package_instance.get_package_line_no()
                     self.package_instance.set_package_loc(existing_pckg_loc)
@@ -559,6 +580,8 @@ class XmlProperties:
                 SerializeSoCCMiner.serialize_construct(self.package_instance, package_serialization_file)
             elif self.is_comment_element(ele) and self.fetch_element_line_no(ele) not in self.processed_comment_dict:
                 if package_name is not None:
+                    # CR - comments that are not in any entity particularly initial comments before class/interface
+                    # or other entities
                     self.proc_comment_attributes(ele)
                 else:
                     comments_before_package.append(ele)
@@ -568,7 +591,7 @@ class XmlProperties:
                                                                                 self.fetch_element_line_no(ele),
                                                                                 len(list(self.root))))
         #  Processing initial comments that are present before
-        #  package statement in source code just after the package statement has been processed by pysocer
+        #  package statement in source code just after the package statement has been processed by soccminer
         if len(comments_before_package) > 0:
             self.set_parent_instance(self.root)
             for comment_ele in comments_before_package:
@@ -732,6 +755,10 @@ class XmlProperties:
                     self.construct_obj_instance.set_enum_source(src_file_name)
                 SerializeSoCCMiner.serialize_construct(self.construct_obj_instance, entity_obj.get_identifier())
 
+        self.file_obj.total_comments = self.all_cmnts_cntr
+        SerializeSoCCMiner.serialize_construct(self.file_obj, file_instance_obj.get_identifier())
+        self.logger.debug("Total comments in file: {}".format(self.all_cmnts_cntr))
+        self.logger.debug("Total LOC: {}".format(self.file_obj.file_loc))
         #  resetting
         self.top_level_elements = []
         self.project_dir = None
@@ -800,20 +827,28 @@ class XmlProperties:
         else:
             if type(construct) == str:
                 self.logger.debug(" Construct is of type str")
-                if construct.lower().endswith("xml"):
+                if construct.lower().endswith("xml") or construct.lower().endswith("java"):
                     try:
-                        fh = open(construct, "r")
+                        fh = None
+                        if construct.lower().endswith("java"):
+                            fh = open(construct, "r", encoding='latin-1')
+                        else:
+                            fh = open(construct, "r")
                         src_lines = fh.readlines()
                         fh.close()
-                        # removing 1 for xml declaration in xml format
-                        construct_loc = len(src_lines) - 1
+                        if construct.lower().endswith("xml"):
+                            # removing 1 for xml declaration in xml format
+                            construct_loc = len(src_lines) - 1
+                        else:
+                            construct_loc = len(src_lines)
+                        src_lines = None
                         self.logger.debug(" LOC of file{}: {} ".format(construct, construct_loc))
                     except IOError as fh_exc:
                         self.logger.error("Error while fetching file loc for file {}: {}, {}".format(construct, fh_exc.errno, fh_exc.strerror))
                     else:
                         self.logger.debug(" LOC of file: {} ".format(construct_loc))
                 else:
-                    self.logger.debug(" Construct does not end with xml")
+                    self.logger.debug(" Construct does not end with xml or java")
         return construct_loc
 
     def fetch_predecessor(self, ele):
@@ -912,7 +947,7 @@ class XmlProperties:
         if anonymous_flag:
             self.set_construct_type_attr(XmlProperties.cnstrct_type_anonymous)
         elif generic_flag and derived_flag:
-            self.set_construct_type_attr(XmlProperties.cnstrct_type_generic + XmlProperties.cnstrct_type_derived)
+            self.set_construct_type_attr(XmlProperties.cnstrct_type_derived + '_' + XmlProperties.cnstrct_type_generic)
         elif generic_flag and not derived_flag:
             self.set_construct_type_attr(XmlProperties.cnstrct_type_generic)
         elif derived_flag and not generic_flag:
@@ -1003,7 +1038,15 @@ class XmlProperties:
             if type(attr_element) == str:  # for attr_element
                 construct_obj.set_class_name(attr_element)
             else:
-                construct_obj.set_class_name(self.get_text(attr_element))
+                cls_name = self.get_text(attr_element)
+                if cls_name is not None:
+                    if len(cls_name) > 0:
+                        construct_obj.set_class_name(cls_name)
+                else:
+                    for child_attr_element in self.get_children_iter(attr_element):
+                        if self.is_name_element(child_attr_element):
+                            cls_name = self.get_text(child_attr_element)
+                            construct_obj.set_class_name(cls_name)
         elif type(construct_obj).__name__ == "InterfaceInfo":
             construct_obj.set_interface_name(self.get_text(attr_element))
         elif type(construct_obj).__name__ == "EnumInfo":
@@ -1300,7 +1343,7 @@ class XmlProperties:
         if not self.is_root_element(comment_assoc_block_ele):
             if self.is_construct_element(self.get_element_tag(comment_assoc_block_ele)):
                 comment_instance.set_comment_sub_category("NON_BLOCK_LEVEL")
-                comment_instance.set_comment_sub_category_type("CONSTRUCT")
+                comment_instance.set_comment_sub_category_type("CONSTRUCT_ENTITY")
             elif self.is_control_element(self.get_element_tag(comment_assoc_block_ele)):
                 comment_instance.set_comment_sub_category("BLOCK_LEVEL")
                 comment_instance.set_comment_sub_category_type("CONTROL")
@@ -1317,7 +1360,7 @@ class XmlProperties:
                 "Package" if self.is_root_element(comment_assoc_block_ele) else self.get_element_tag(comment_assoc_block_ele))
         else:
             comment_instance.set_comment_sub_category("NON_BLOCK_LEVEL")
-            comment_instance.set_comment_sub_category_type("PACKAGE")
+            comment_instance.set_comment_sub_category_type("PACKAGE_ENTITY")
             comment_instance.set_comment_assoc_block_ele(
                 "Package" if self.is_root_element(comment_assoc_block_ele) else self.get_element_tag(self.root))
 
@@ -1332,6 +1375,8 @@ class XmlProperties:
             return "StaticBlock"
         elif type(comment_parent_instance).__name__ == "PackageInfo":
             return "Package"
+        elif type(comment_parent_instance).__name__ == "EnumInfo":
+            return "Enum"
 
     def fetch_element_attribute(self, element, attribute_name=None):
         if attribute_name is not None:
@@ -1493,6 +1538,7 @@ class XmlProperties:
         comment_instance = CommentInfo()
         comment_line_no = self.fetch_element_line_no(element)
         comment_instance.set_comment_file_name(self.src_file_name)
+        self.all_cmnts_cntr += 1
 
         # check for consecutive comments
         self.consecutive_comment_first = None  # resetting
@@ -1501,6 +1547,8 @@ class XmlProperties:
         comment_instance.set_comment_element(element)
 
         comment_parent_instance = self.fetch_parent_instance().get_construct_instance_obj()
+        if ASTHelper.is_package_info_obj(comment_parent_instance):
+            comment_parent_instance = self.file_obj
         self.project_comments_dir = self.project_dir + '/' + type(comment_parent_instance).__name__ + '/comments'
 
         #self.assoc_comment_to_construct(comment_parent_instance, comment_instance)
@@ -1595,13 +1643,13 @@ class XmlParsing:
         # create exception dir
 
         # log for each AST parsing
-        ast_log = ""
-        if Platform.is_unix_platform():
-            ast_log = source_ast_parser_obj.xml_file.split('/')[-1].replace(".xml", "_" + datetime.now().strftime("%d_%m_%Y_%H_%M_%S") + '.log')
-        elif Platform.is_windows_platform():
-            ast_log = source_ast_parser_obj.xml_file.split('\\')[-1].replace(".xml", "_" + datetime.now().strftime("%d_%m_%Y_%H_%M_%S") + '.log')
-        source_ast_parser_obj.logger = SoCCMinerLogger.fetch_ast_parsing_log(ast_log, log_level)
-
+        #ast_log = ""
+        #if Platform.is_unix_platform():
+        #    ast_log = source_ast_parser_obj.xml_file.split('/')[-1].replace(".xml", "_" + datetime.now().strftime("%d_%m_%Y_%H_%M_%S") + '.log')
+        #elif Platform.is_windows_platform():
+        #    ast_log = source_ast_parser_obj.xml_file.split('\\')[-1].replace(".xml", "_" + datetime.now().strftime("%d_%m_%Y_%H_%M_%S") + '.log')
+        #source_ast_parser_obj.logger = SoCCMinerLogger.fetch_ast_parsing_log(ast_log, log_level)
+        source_ast_parser_obj.logger = logging
         source_ast_parser_obj.logger.info("{}: AST parsing begins for {}".format(xml_file_number, xml_file))
 
         try:
@@ -1610,16 +1658,30 @@ class XmlParsing:
             source_ast_parser_obj.set_unit_element()
             source_ast_parser_obj.proc_java_ast_elements(proj_dir, src_file, xml_file, xml_file_number)
         except Exception as ast_unknown_exception:
-            source_ast_parser_obj.logger.error(
-                "Error while processing source code file{} {} {}".format(xml_file, sys.exc_info()[0],
-                                                                         ast_unknown_exception))
+            #source_ast_parser_obj.logger.error(
+            #    "Error while processing source code file{} {} {}".format(xml_file, sys.exc_info()[0],
+            #                                                             ast_unknown_exception))
             project_name = ""
+            exception_dir = ''
+            java_file = ''
             if Platform.is_unix_platform():
                 project_name = proj_dir.split('/')[-1].replace("/", "")
+
+                exception_dir = proj_dir + '/' + 'exceptions' + '/'
+                java_file = src_file.split("/")[-1]
             elif Platform.is_windows_platform():
                 project_name = proj_dir.split('\\')[-1].replace("\\", "")
+
+                exception_dir = proj_dir + '\\' + 'exceptions' + '\\'
+                java_file = src_file.split("\\")[-1]
+            if not os.path.isdir(exception_dir):
+                os.makedirs(exception_dir)
             error_message = traceback.format_exc()
+            error_file = exception_dir + java_file.replace(".java", ".error")
             exception_obj.update_exception_message(project_name, error_message)
+            with open(error_file, 'w') as writer:
+                writer.write("{}".format(error_message))
+
             del source_ast_parser_obj
             ASTHelper.clear_locals()
             gc.collect()

@@ -1,12 +1,13 @@
 from soccminer import CommentsMiner
 
+
 def demo(cm):
-    ## Loads JavaMiner object for mining level 'all' that contains both project
-    ## meta and comprehensive comments
+    # Loads JavaMiner object for mining level 'all' that contains both project
+    # meta and comprehensive comments
     mined_proj_obj_list = cm.fetch_mined_project_meta_and_comments()
     for proj in mined_proj_obj_list:
         ############################################################
-        ## Java project meta attributes
+        # Java project meta attributes
         print("Package Count: {}".format(proj.get_package_count()))
         print("Class Count: {}".format(proj.get_class_count()))
         print("Enum Count: {}".format(proj.get_enum_count()))
@@ -30,13 +31,13 @@ def demo(cm):
             print("Class LOC: {}".format(class_obj.class_loc))
             print("Class Java Source File #: {}".format(class_obj.class_source_file))
 
-        ## Similarly interface_obj attributes, enum_obj attributes, static_block and method
-        ## attributes can be used in the pipeline
+        # Similarly interface_obj attributes, enum_obj attributes, static_block and method
+        # attributes can be used in the pipeline
 
         ############################################################
-        ## Comprehensive Comment at entity level, i.e., ComprehensiveCommentsAttribute objects
+        # Comprehensive Comment at entity level, i.e., ComprehensiveCommentsAttribute objects
 
-        ## fetch all comprehensive comments
+        # fetch all comprehensive comments
         for comprehensive_comments_obj in proj.get_comprehensive_comment_attr():
             print("Comment content: {}".format(comprehensive_comments_obj.comment_text))
             print("Comment line #: {}".format(comprehensive_comments_obj.comment_text))
@@ -52,7 +53,7 @@ def demo(cm):
             print("Comment is a last statement in: {}".format(comprehensive_comments_obj.last_element_in))
             print("Comment type: {}".format(comprehensive_comments_obj.comment_type))
 
-        ## fetch package level comprehensive comments
+        # fetch package level comprehensive comments
         for comprehensive_comments_obj in proj.get_comprehensive_package_comment_attr():
             print("Comment content: {}".format(comprehensive_comments_obj.comment_text))
             print("Comment line #: {}".format(comprehensive_comments_obj.comment_text))
@@ -68,27 +69,27 @@ def demo(cm):
             print("Comment is a last statement in: {}".format(comprehensive_comments_obj.last_element_in))
             print("Comment type: {}".format(comprehensive_comments_obj.comment_type))
 
-    ## Similarly other entity level comprehensive comments can be mined using
-    ## proj.get_comprehensive_class_comment_attr()  for class level
-    ## proj.get_comprehensive_method_comment_attr()  for method level
-    ## proj.get_comprehensive_interface_comment_attr()  for interface level
-    ## proj.get_comprehensive_static_block_comment_attr()  for static block level
+            # Similarly other entity level comprehensive comments can be mined using
+            # proj.get_comprehensive_class_comment_attr()  for class level
+            # proj.get_comprehensive_method_comment_attr()  for method level
+            # proj.get_comprehensive_interface_comment_attr()  for interface level
+            # proj.get_comprehensive_static_block_comment_attr()  for static block level
 
 
 ############# Main #############	
 # for mining source code
 # input directory contains Java repository/ies
-mining_obj = CommentsMiner('/home/murali/Downloads/pysoccer_test_data/', 'java', 'all', False, 'nolog')
+mining_obj = CommentsMiner(source_url='/home/murali/Downloads/pysoccer_test_data/microsoft_appcenter-sampleapp-android/', m_level='all')
+demo(mining_obj)
 
-# for loading mined entites
+# for loading already mined entites (i.e., passive loading)
 # here the SoCCMiner_Mined_Entities directory is created by the script while mining the source code
-# by default, it will be inside the current working directory during execution.
-# For example, if the script is executed at /usr/desktop then SoCCMiner_Mined_Entities dir
-# will be available at /usr/desktop/SoCCMiner_Mined_Entities
-# NOTE: loading cannot necessarily happen after mining. Repos can be mined in one location, zipped and transfered to another location
+# by default, it will be in the current working directory during execution.
+# For example, if the script is executed at /usr/desktop/soccminer/ then SoCCMiner_Mined_Entities dir
+# will be available at /usr/desktop/soccminer/SoCCMiner_Mined_Entities
+# NOTE: loading need not happen after mining. Repos can be mined in one location, zipped and transfered to another location
 # then, the input dir must point to the unzipped directory containing mined_entities of projects.
-load_obj = CommentsMiner('/home/murali/PycharmProjects/soccminer/SoCCMiner_Mined_Entities/', 'java',
-                         'all', True, 'nolog')
 
+load_obj = CommentsMiner(source_url='/home/murali/PycharmProjects/soccminer/SoCCMiner_Mined_Entities/microsoft_appcenter-sampleapp-android/', m_level='all', direct_load=True)
 demo(load_obj)
 

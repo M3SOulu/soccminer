@@ -4,6 +4,6 @@ from soccminer.proj_comments_comprehensive_attr import ComprehensiveCommentsAttr
 from soccminer.java_project_meta_attributes import JavaMetaAttribute
 from soccminer.java_proj_miner import JavaMiner
 from soccminer.json_serialization import SerializeSoCCMiner
-from soccminer.source_code_details import PackageInfo, ClassInfo, MethodInfo, InterfaceInfo, StaticBlockInfo, EnumInfo
+from soccminer.java_project_meta_attributes import JavaFileMeta, JavaPackageMeta, JavaClassMeta, JavaMethodMeta, JavaInterfaceMeta, JavaStaticBlockMeta, JavaEnumMeta
 from soccminer.comments import CommentInfo, Comment
 

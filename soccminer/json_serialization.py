@@ -180,7 +180,11 @@ class SerializeSoCCMiner:
         construct_info = {}
 
         logging.info("Serializing object {} at {}".format(type(construct_obj).__name__, serialization_file))
-        if ASTHelper.is_class_info_obj(construct_obj):
+        if ASTHelper.is_file_info_obj(construct_obj):
+            construct_info['Source_File'] = construct_obj.get_file_source()
+            construct_info['File_LOC'] = construct_obj.get_file_loc()
+            construct_info['File_Comments_Count'] = construct_obj.get_file_comments_count()
+        elif ASTHelper.is_class_info_obj(construct_obj):
             construct_info['Class_Name'] = construct_obj.get_class_name()
             construct_info['Class_Type'] = construct_obj.get_class_type()
             construct_info['Class_Specifier'] = construct_obj.get_class_specifier()
@@ -215,6 +219,7 @@ class SerializeSoCCMiner:
             construct_info['Method_Type'] = construct_obj.get_method_type()
             construct_info['Method_Specifier'] = construct_obj.get_method_specifier()
             construct_info['Method_Signature'] = construct_obj.get_method_signature()
+            construct_info['Method_Param_Count'] = construct_obj.get_method_param_cnt()
             construct_info['Method_Category'] = construct_obj.get_method_category()
             construct_info['Method_LOC'] = construct_obj.get_method_loc()
             construct_info['Method_Line_No'] = construct_obj.get_method_line_no()
