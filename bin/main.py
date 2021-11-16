@@ -127,27 +127,27 @@ def validate_cli_args():
     global inp_dir, m_level, load_proj, log_level, prog_lang, output_dir, mode
     # parse input arguments
     parser = argparse.ArgumentParser(prog='SoCCMiner', description='Source Code Comments miner')
-    parser.add_argument("-input",
+    parser.add_argument("-i", "--input",
                         help="Defines the input to the tool. Can be 'local_dir' containing project source files or containing project repositories as sub-directories or 'Git Repo URL'")
-    parser.add_argument("-language", default='java',
+    parser.add_argument("-l", "--language", default='java',
                         help="The programming language of the project, for now only java project are handled by SoCCMiner")
-    parser.add_argument("-level", default='comment',
+    parser.add_argument("-lvl", "--level", default='comment',
                         help="Defines the mining/project entity loading level. Can be 'comment' to mine/load basic comment info, "
                                              "'comprehensive_comment' to mine/load comprehensive comment attributes, "
                                              "'project' to mine/load project attributes), "
                                              "'all' (for project and comprehensive attributes) "
                                              " NOTE: While loading entities with 'direct_load' input argument set to True, SoCCMiner expects the same mining level with which the project was mined.")
-    parser.add_argument("-direct_load", default=False,
+    parser.add_argument("-dl", "--direct_load", default=False,
                         help="direct_load - If True, loads the data pipelines with project entities from the mined entities directory containing the soccminer serialized json files. "
               "If False, mines source code projects for comments, source code entities and their attributes according to the mining level input and then loads the data pipelines."
               " NOTE: Mined Project can only be loaded from local directory, if load_project is set to True, input should be local directory containing SoCC-Miner Mined Entities")
 
-    parser.add_argument("-log", default='nolog',
+    parser.add_argument("-log", "--log", default='nolog',
                         help="Defines the logging level. Can be one of nolog(NOLOG), info(INFO), debug(DEBUG)"
                              "NOTE: Enabling log creates very huge file log file for huge source code repositories. Enable it for debugging after ensuring enough disk space is available.")
-    parser.add_argument("-output", default=os.getcwd(),
+    parser.add_argument("-o", "--output", default=os.getcwd(),
                         help="Defines the output directory where the mined entities will be stored by default it is current working directory")
-    parser.add_argument("-mode", default='single',
+    parser.add_argument("-m", "--mode", default='single',
                         help="Defines SoCC-Miner execution mode, can be 'single' to mine single project directory (i.e., all files and directories within input directory will be treated as a single project), \n"
                              "'multiple' to mine multiple project directories in which all sub-directories within the input directory will be treated as separate project directories, or \n"
                              "NOTE: SoCC-Miner expects an input directory that contains only project directory/ies as sub-directory/ies in 'multiple' mode. \n")
@@ -188,7 +188,6 @@ def main():
         # Passing the args as rcvd from commandline without validation as there's a validation in the API call
         # However this validation here happens when invoked from commandline only
         cm = CommentsMiner(inp_dir, prog_lang, m_level, load_proj, log_level, output_dir, mode)
-
         if not load_proj_flag and cm.invalid_ing_arg_flag:
             print("Unable to mine the source code as SoccMiner did not execute due to invalid input argument.")
             sys.exit(1)

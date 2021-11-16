@@ -666,6 +666,11 @@ class CommentsMiner:
             return False
         else:
             self.lang = programming_language
+
+        if Platform.is_unix_platform():
+            self.output_dir = output_dir[:-1] if output_dir.endswith('/') else output_dir
+        elif Platform.is_windows_platform():
+            self.output_dir = output_dir[:-1] if output_dir.endswith('\\') else output_dir
         return True
 
     def initiate_mining(self):
@@ -732,9 +737,9 @@ class CommentsMiner:
                                     "Potential invalid source code file or failed xml conversion for {} whose file size is 0 "
                                     "".format(xml_file))
                                 empty_file_count += 1
-                        valid_file_count = len(src_files.get_files()) - empty_file_count
-                        print('\r Source files successfully prepared for {}/{}'
-                              ''.format(valid_file_count, len(src_files.files)), sep='', end='', flush=True)
+
+                        valid_file_count = len(src_files.get_files()) - empty_file_count - self.exception_obj.failed_ast_conv_dict[project_name]
+                        logging.info('Source files successfully prepared for {}/{}'.format(valid_file_count, len(src_files.files)))
 
                         processed_source_file_dir = ''
                         exception_dir = ''
@@ -810,15 +815,18 @@ class CommentsMiner:
                         file_list = src_files.get_files()
                         proj_path = ''
                         proj_name_str = ''
+                        updated_file_list=[]
                         if Platform.is_unix_platform():
                             proj_name_str = '/' + project_name + '/'
+                            proj_path = file_list[0].split(proj_name_str)[0]
+                            updated_file_list = [file.replace(proj_path, '').replace("/", ".")[1:] for file in file_list]
                         elif Platform.is_windows_platform():
                             proj_name_str = '\\' + project_name + '\\'
-                        proj_path = file_list[0].split(proj_name_str)[0]
-                        updated_file_list = [file.replace(proj_path, '') for file in file_list]
+                            proj_path = file_list[0].split(proj_name_str)[0]
+                            updated_file_list = [file.replace(proj_path, '').replace("\\", ".")[1:] for file in file_list]
                         src_files.files = updated_file_list
                         file_list = None
-                        updated_file_list = None
+                        updated_file_list = []
 
                         src_file_proj_info['src_file_obj'] = src_files
                         src_file_proj_info['proj_name'] = project_name
@@ -868,7 +876,6 @@ class CommentsMiner:
                     logging.warning("One or more project has empty source code files")
                 else:
                     self.miner_status_flag = True
-
 
             # Releasing processed objects
             for processed_mining_object in mining_objects_list:

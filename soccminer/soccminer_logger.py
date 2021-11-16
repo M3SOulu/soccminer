@@ -26,10 +26,13 @@ class SoCCMinerLogger:
         if log != 0:
             if SoCCMinerLogger.main_logger is None and len(file_name) == 0:
                 fname = None
+                if not os.path.isdir(SoCCMinerLogger.log_dir):
+                    os.makedirs(SoCCMinerLogger.log_dir)
                 if Platform.is_unix_platform():
                     fname = SoCCMinerLogger.log_dir + "/" + "soccminer_" + datetime.now().strftime("%d_%m_%Y_%H_%M_%S") + '.log'
                 elif Platform.is_windows_platform():
                     fname = SoCCMinerLogger.log_dir + "\\" + "soccminer_" + datetime.now().strftime("%d_%m_%Y_%H_%M_%S") + '.log'
+
                 self.main_log_file = fname
                 logging.basicConfig(filename=fname, format='%(asctime)s:%(levelname)s:%(funcName)s:%(message)s', level=self.log)
                 SoCCMinerLogger.main_logger = True

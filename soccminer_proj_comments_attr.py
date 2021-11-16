@@ -82,12 +82,12 @@ def demo(cm):
 mining_obj = CommentsMiner(source_url='/home/murali/Downloads/pysoccer_test_data/microsoft_appcenter-sampleapp-android/', m_level='all')
 demo(mining_obj)
 
-# for loading already mined entites (i.e., passive loading)
-# here the SoCCMiner_Mined_Entities directory is created by the script while mining the source code
-# by default, it will be in the current working directory during execution.
+# for loading already mined entites (i.e., passive loading) the input 
+# here is the SoCCMiner_Mined_Entities directory created by SoCCMiner while mining the source code.
+# By default, it will be in the current working directory during execution.
 # For example, if the script is executed at /usr/desktop/soccminer/ then SoCCMiner_Mined_Entities dir
 # will be available at /usr/desktop/soccminer/SoCCMiner_Mined_Entities
-# NOTE: loading need not happen after mining. Repos can be mined in one location, zipped and transfered to another location
+# NOTE: Need not mine the entire project repo everytime to load the data pipelines. Repos can be mined in one location, zipped and transfered to another location
 # then, the input dir must point to the unzipped directory containing mined_entities of projects.
 
 load_obj = CommentsMiner(source_url='/home/murali/PycharmProjects/soccminer/SoCCMiner_Mined_Entities/microsoft_appcenter-sampleapp-android/', m_level='all', direct_load=True)

@@ -6,7 +6,7 @@ from soccminer.srcml import SourceML
 from soccminer.process_parameters import ProcessParameter
 from soccminer.environment import Platform
 from soccminer.json_serialization import SerializeSoCCMiner
-from soccminer.helper import ASTHelper
+from soccminer.helper import ASTHelper, Utility
 from soccminer.soccminer_logger import SoCCMinerLogger
 from lxml import etree
 import logging
@@ -15,6 +15,7 @@ import gc
 from copy import copy
 import os
 import traceback
+import shutil
 from datetime import datetime
 
 
@@ -145,6 +146,7 @@ class XmlProperties:
         self.logger = None
         self.file_obj = None
         self.all_cmnts_cntr = 0
+        self.project_name = None
         self.xml_file = xml_file
 
         # fetch the program parameters set in the driver module CommentsMiner
@@ -443,11 +445,14 @@ class XmlProperties:
         # instance_identifier += '_' + self.entity_counter[entity_obj.get_instance_type()]
         try:
             if not validate_loc(instance_identifier):
+                if os.path.isdir(instance_identifier):
+                    shutil.rmtree(instance_identifier)
                 os.makedirs(instance_identifier)
 
         except OSError as e:
             self.logger.error(
                 "Unable to create/delete entity directory {} ~ Process failed".format(instance_identifier))
+            Utility.clear_temp_folders()
             raise Exception("Comments Miner failed as entity directory creation failed")
         else:
             # append unique counter to make distinct json file xml_file_num
@@ -527,11 +532,21 @@ class XmlProperties:
         self.xml_file_num = xml_file_num
         self.src_file_name = src_file_name
         self.package_instance = None
+        if Platform.is_unix_platform():
+            proj_dir = proj_dir[:-1] if proj_dir.endswith('/') else proj_dir
+            self.project_name = proj_dir.split('/')[-1].replace("/", "")
+            self.src_file_name = src_file_name.split(self.project_name)[-1].replace("/", ".")
+            self.src_file_name = self.src_file_name[1:] if self.src_file_name.startswith(".") else self.src_file_name
+        elif Platform.is_windows_platform():
+            proj_dir = proj_dir[:-1] if proj_dir.endswith('\\') else proj_dir
+            self.project_name = proj_dir.split('/')[-1].replace("\\", "")
+            self.src_file_name = src_file_name.split(self.project_name)[-1].replace("\\", ".")
+            self.src_file_name = self.src_file_name[1:] if self.src_file_name.startswith(".") else self.src_file_name
 
         # FileInfo entity
         file_instance_obj = self.populate_instance("File")
         self.file_obj = file_instance_obj.get_construct_instance_obj()
-        self.file_obj.source_file_name = src_file_name
+        self.file_obj.source_file_name = self.src_file_name
         self.file_obj.file_loc = self.fetch_construct_loc(src_file_name)
         self.logger.debug("File obj loc: {}, {}".format(self.file_obj.source_file_name, self.file_obj.file_loc))
 
@@ -567,13 +582,13 @@ class XmlProperties:
                     existing_pckg_line_no = self.package_instance.get_package_line_no()
                     self.package_instance.set_package_loc(existing_pckg_loc)
                     self.package_instance.set_package_line_no(",".join([str(existing_pckg_line_no), str(self.fetch_element_line_no(ele))]))
-                    self.package_instance.set_package_source(",".join([existing_pckg_source, src_file_name]))
+                    self.package_instance.set_package_source(",".join([existing_pckg_source, self.src_file_name]))
                     self.package_instance.set_package_name(self.package_instance.get_package_name())
                     package_serialization_file = self.existing_pckg_serialization_url
                 else:
                     self.package_instance.set_package_loc(self.fetch_construct_loc(xml_file_name))
                     self.package_instance.set_package_line_no(self.fetch_element_line_no(ele))
-                    self.package_instance.set_package_source(src_file_name)
+                    self.package_instance.set_package_source(self.src_file_name)
                     package_name = self.fetch_package_name(ele)
                     self.package_instance.set_package_name(package_name)
                     package_serialization_file = entity_obj.get_identifier()
@@ -609,7 +624,7 @@ class XmlProperties:
             self.package_instance.set_package_name("ANONYMOUS_PACKAGE")
             self.package_instance.set_package_line_no(self.fetch_element_line_no(self.root))
             self.package_instance.set_package_loc(self.fetch_construct_loc(xml_file_name))
-            self.package_instance.set_package_source(src_file_name)
+            self.package_instance.set_package_source(self.src_file_name)
             if self.package_entity_element is not None:
                 entity_obj = self.parent_instance_dict[self.fetch_element_line_no(self.package_entity_element)]
             else:
@@ -740,19 +755,19 @@ class XmlProperties:
                 entity_obj = self.parent_instance_dict[self.fetch_element_line_no(construct)]
                 if ASTHelper.is_class_info_obj(self.construct_obj_instance):
                     # project_instance.append_project_class(self.construct_obj_instance)
-                    self.construct_obj_instance.set_class_source(src_file_name)
+                    self.construct_obj_instance.set_class_source(self.src_file_name)
                 elif ASTHelper.is_method_info_obj(self.construct_obj_instance):
                     # project_instance.append_project_method(self.construct_obj_instance)
-                    self.construct_obj_instance.set_method_source(src_file_name)
+                    self.construct_obj_instance.set_method_source(self.src_file_name)
                 elif ASTHelper.is_interface_info_obj(self.construct_obj_instance):
                     # project_instance.append_project_interface(self.construct_obj_instance)
-                    self.construct_obj_instance.set_interface_source(src_file_name)
+                    self.construct_obj_instance.set_interface_source(self.src_file_name)
                 elif ASTHelper.is_static_block_info_obj(self.construct_obj_instance):
                     # project_instance.append_project_static_block(self.construct_obj_instance)
-                    self.construct_obj_instance.set_static_block_source(src_file_name)
+                    self.construct_obj_instance.set_static_block_source(self.src_file_name)
                 elif ASTHelper.is_enum_info_obj(self.construct_obj_instance):
                     # project_instance.append_project_static_block(self.construct_obj_instance)
-                    self.construct_obj_instance.set_enum_source(src_file_name)
+                    self.construct_obj_instance.set_enum_source(self.src_file_name)
                 SerializeSoCCMiner.serialize_construct(self.construct_obj_instance, entity_obj.get_identifier())
 
         self.file_obj.total_comments = self.all_cmnts_cntr
@@ -1658,18 +1673,18 @@ class XmlParsing:
             source_ast_parser_obj.set_unit_element()
             source_ast_parser_obj.proc_java_ast_elements(proj_dir, src_file, xml_file, xml_file_number)
         except Exception as ast_unknown_exception:
-            #source_ast_parser_obj.logger.error(
-            #    "Error while processing source code file{} {} {}".format(xml_file, sys.exc_info()[0],
-            #                                                             ast_unknown_exception))
             project_name = ""
             exception_dir = ''
             java_file = ''
+
             if Platform.is_unix_platform():
+                proj_dir = proj_dir[:-1] if proj_dir.endswith('/') else proj_dir
                 project_name = proj_dir.split('/')[-1].replace("/", "")
 
                 exception_dir = proj_dir + '/' + 'exceptions' + '/'
                 java_file = src_file.split("/")[-1]
             elif Platform.is_windows_platform():
+                proj_dir = proj_dir[:-1] if proj_dir.endswith('\\') else proj_dir
                 project_name = proj_dir.split('\\')[-1].replace("\\", "")
 
                 exception_dir = proj_dir + '\\' + 'exceptions' + '\\'

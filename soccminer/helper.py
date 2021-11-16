@@ -33,10 +33,11 @@ class TrackProgress:
     @staticmethod
     def track_ast_parsing_progress(total_files, processed_source_file_dir, error_file_dir, project_name, mining_level):
         logging.info("track_ast_parsing_progress begins")
-        os.makedirs(processed_source_file_dir) if not os.path.isdir(processed_source_file_dir) else None
-        os.makedirs(error_file_dir) if not os.path.isdir(error_file_dir) else None
+        if not os.path.isdir(processed_source_file_dir):
+            os.makedirs(processed_source_file_dir)
+        if not os.path.isdir(error_file_dir):
+            os.makedirs(error_file_dir)
         if os.path.isdir(processed_source_file_dir) and os.path.isdir(error_file_dir):
-            logging.info("processed_dir and error dir  exists")
             processed_files = TrackProgress.fetch_file_count(processed_source_file_dir, 'json') + TrackProgress.fetch_file_count(error_file_dir, 'error')
             processed_files = 1 if processed_files == 0 else processed_files
 

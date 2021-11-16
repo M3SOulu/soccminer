@@ -107,6 +107,7 @@ class SerializeSoCCMiner:
             file_name=destination_dir + '\\' + proj_name
 
         src_file_object = src_file_proj_info['src_file_obj']
+
         src_file_info['Serialized_Project_Name'] = src_file_proj_info['proj_name']
         src_file_info['Serialized_Project_KLOC'] = src_file_proj_info['proj_loc']
         src_file_info['Serialized_Project_Platform'] = src_file_proj_info['platform']
