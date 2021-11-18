@@ -1,6 +1,7 @@
 from soccminer.comments_miner import CommentsMiner
 from soccminer.soccminer_logger import SoCCMinerLogger
 from soccminer.helper import RepoDownloader
+from soccminer.environment import Platform
 import logging
 import argparse
 import traceback
@@ -81,7 +82,11 @@ def validate_cli(cl_args):
                 return False
             else:
                 local_inp_dir = cloned_folder
-                inp_dir = cloned_folder
+                if Platform.is_unix_platform():
+                    inp_dir = local_inp_dir[:-1] if local_inp_dir.endswith('/') else local_inp_dir
+                elif Platform.is_windows_platform():
+                    inp_dir = local_inp_dir[:-1] if local_inp_dir.endswith('\\') else local_inp_dir
+
                 if mode != 'single':
                     print("Mode cannot be multiple/files for GitHub project repository, forcing it to 'single'")
                     mode = 'single'
@@ -126,9 +131,9 @@ def validate_cli(cl_args):
 def validate_cli_args():
     global inp_dir, m_level, load_proj, log_level, prog_lang, output_dir, mode
     # parse input arguments
-    parser = argparse.ArgumentParser(prog='SoCCMiner', description='Source Code Comments miner')
+    parser = argparse.ArgumentParser(prog='main.py', description='Source Code Comments miner')
     parser.add_argument("-i", "--input",
-                        help="Defines the input to the tool. Can be 'local_dir' containing project source files or containing project repositories as sub-directories or 'Git Repo URL'")
+                        help="Defines the input to the tool. Mandatory input argument. Can be 'local_dir' containing project source files or containing project repositories as sub-directories or 'Git Repo URL'")
     parser.add_argument("-l", "--language", default='java',
                         help="The programming language of the project, for now only java project are handled by SoCCMiner")
     parser.add_argument("-lvl", "--level", default='comment',
@@ -153,6 +158,10 @@ def validate_cli_args():
                              "NOTE: SoCC-Miner expects an input directory that contains only project directory/ies as sub-directory/ies in 'multiple' mode. \n")
                              #"'files' to mine individual source files that are not part of any project, all the individual files will be collectively treated as a single project. \n"
                              #"NOTE: SoCC-Miner expects an input directory that contains only project directory/ies as sub-directory/ies in 'multiple' mode. \n")
+
+    if len(sys.argv) <= 1:
+        parser.print_help()
+        sys.exit(1)
 
     cl_args = parser.parse_args()
     inp_dir = cl_args.input
@@ -187,6 +196,7 @@ def main():
         logging.info("Input Load_Project: {}, {}".format(load_proj, load_proj_flag))
         # Passing the args as rcvd from commandline without validation as there's a validation in the API call
         # However this validation here happens when invoked from commandline only
+
         cm = CommentsMiner(inp_dir, prog_lang, m_level, load_proj, log_level, output_dir, mode)
         if not load_proj_flag and cm.invalid_ing_arg_flag:
             print("Unable to mine the source code as SoccMiner did not execute due to invalid input argument.")

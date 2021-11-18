@@ -59,13 +59,13 @@ class SourceFiles:
             try:
                 logging.debug("AST conversion for #{} {} begins".format(src_file_count, code_file))
                 logging.debug("xml_file_name: {}".format(code_file))
-                xml_file_name = code_file.replace(self.loc,'')
+                xml_file_name = code_file.replace(self.loc, '')
                 srcml_xml_file = ""
                 if Platform.is_unix_platform():
-                    xml_file_name = xml_file_name.replace('/', '__')
+                    xml_file_name = xml_file_name.split('/')[-1]
                     srcml_xml_file = temp_dir_loc + "/" + os.path.splitext(xml_file_name)[0]+'.xml'
                 elif Platform.is_windows_platform():
-                    xml_file_name = xml_file_name.replace('\\', '__')
+                    xml_file_name = xml_file_name.split('\\')[-1]
                     srcml_xml_file = temp_dir_loc + "\\" + os.path.splitext(xml_file_name)[0]+'.xml'
 
                 logging.debug("To be converted AST file: {}".format(srcml_xml_file))
@@ -95,20 +95,23 @@ class SourceFiles:
                     if ret_code == 0:
                         self.cd_file_xml_mapping_dict[code_file] = srcml_xml_file
                     else:
-                        logging.error("\n AST conversion failed with {}:{} for {}".format(ret_code, message, code_file))
+                        logging.info("\n AST conversion failed with {}:{} for {}".format(ret_code, message, code_file))
                         failed_files.append(code_file)
+                        exception_obj.update_warning_message(project_name,
+                                                             "Failed AST conversion {}".format(
+                                                                 code_file))
             except OSError as e:
-                logging.error("AST conversion failed for {} ".format(code_file))
+                logging.info("AST conversion failed for {} ".format(code_file))
                 failed_files.append(code_file)
                 continue
             except Exception as src_file_cnv:
-                logging.error("AST conversion failed for {} with {} {}".format(code_file, sys.exc_info()[0], src_file_cnv))
+                logging.info("AST conversion failed for {} with {} {}".format(code_file, sys.exc_info()[0], src_file_cnv))
                 failed_files.append(code_file)
                 continue
 
         if len(failed_files) > 0:
-            exception_obj.update_exception_message(project_name,
-                                                   "Project {} has {} failed AST conversions. Check Log file for details (if log has been enabled)".format(project_name, len(failed_files)))
+            exception_obj.update_warning_message(project_name,
+                                                   "Project {} has {} failed AST conversions".format(project_name, len(failed_files)))
         exception_obj.update_failed_ast_count(project_name, len(failed_files))
         for x in list(locals().keys())[:]:
             del locals()[x]

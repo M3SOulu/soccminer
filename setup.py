@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='soccminer',
-    version='0.0.22a1',
+    version='0.0.23a1',
     packages=['soccminer'],
     scripts=['bin/main.py'],
     classifiers=[

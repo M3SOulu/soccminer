@@ -153,12 +153,9 @@ class CommentsMiner:
 
     def __init__(self, source_url, lang: str='java', m_level: str ='comment', direct_load=False, log: str = "nolog", output_dir: str =os.getcwd(), mode: str ='single'):
         self.url = source_url
-        self.single_mode_processing_url = None
         if Platform.is_unix_platform():
-            self.url = self.url + '/' if not self.url.endswith("/") else self.url
             CommentsMiner.soccminer_cfg_file = os.getcwd() + '/' + 'soccminer.cfg'
         elif Platform.is_windows_platform():
-            self.url = self.url + '\\' if not self.url.endswith("\\") else self.url
             CommentsMiner.soccminer_cfg_file = os.getcwd() + '\\' + 'soccminer.cfg'
         self.lang = lang
         self.mining_level = m_level
@@ -169,11 +166,13 @@ class CommentsMiner:
         self.invalid_ing_arg_flag = False
         if not self.validate_args(self.url, lang, m_level, direct_load, log, output_dir, mode):
             print("Exiting due to invalid arguments.")
+            logging.info("Exiting due to invalid arguments.")
             self.invalid_ing_arg_flag = True
             return
 
         if not self.load_project and not Utility.validate_srcml():
             print("Exiting due to inadequate environment. srcML is either not installed or installed incorrectly. SoCCMiner unable to utilize srcML.")
+            logging.info("Exiting due to inadequate environment. srcML is either not installed or installed incorrectly. SoCCMiner unable to utilize srcML.")
             self.miner_status_flag = False
             return
 
@@ -193,7 +192,6 @@ class CommentsMiner:
         self.soccminer_cfg_file = None
         self.log_dir = SoCCMinerLogger.log_dir
         self.mined_entity_dir = None
-
         self.log_file_obj = None
 
         logging.debug("Setting soccminer parameters")
@@ -315,34 +313,6 @@ class CommentsMiner:
                   "respective projects.  "
                   "If False, mines source code projects for comments, source code entities and their attributes according to the mining level input")
             logging.error("log - Defines the logging level. Can be one of none(NOLOG), info(INFO), debug(DEBUG)")
-            logging.error("log - Defines the logging level. Can be one of none(NOLOG), info(INFO), debug(DEBUG)")
-
-    @staticmethod
-    def validate_single_mode_input(input):
-        proj_directory = ''
-        main_proj_directory = ''
-        if not CommentsMiner.validate_inp_dir(input):
-            return False
-
-        # fetch the project name
-        if Platform.is_unix_platform():
-            proj_name = input.split("/")[-2] if input.endswith("/") else input.split("/")[-1]
-            main_proj_directory = os.getcwd() + '/soccminer_temp/' + datetime.now().strftime("%d_%m_%Y_%H_%M_%S") + '/single_mode_input/'
-            #main_proj_directory = input if input.endswith('/') else input + '/'
-            proj_directory = main_proj_directory + proj_name
-        elif Platform.is_windows_platform():
-            proj_name = input.split("\\")[-2] if input.endswith("\\") else input.split("\\")[-1]
-            main_proj_directory = os.getcwd() + '\\soccminer_temp\\' + datetime.now().strftime("%d_%m_%Y_%H_%M_%S") + '\\single_mode_input\\'
-            #main_proj_directory = input if input.endswith('\\') else input + '\\'
-            proj_directory = main_proj_directory + proj_name
-
-        shutil.copytree(input, proj_directory)
-        if CommentsMiner.validate_inp_dir(proj_directory):
-            CommentsMiner.proj_url = main_proj_directory
-            return True
-        else:
-            print("Issue in processing input directory {} in single mode".format(input))
-            return False
 
     @staticmethod
     def validate_multiple_mode_input(input):
@@ -350,39 +320,6 @@ class CommentsMiner:
             return False
         else:
             return True
-
-    @staticmethod
-    def validate_files_mode_input(input):
-        proj_directory = ''
-        main_proj_directory = ''
-        if not CommentsMiner.validate_inp_dir(input):
-            return False
-        else:
-            for dir_item in os.listdir(input):
-                if not os.path.isfile(dir_item):
-                    print("Input directory {} cannot contain directories as its content in 'files' mode, "
-                          "only source files are allowed to be present in input directory".format(dir_item))
-                    return False
-
-        # fetch the project name
-        if Platform.is_unix_platform():
-            proj_name = input.split("/")[-2] if input.endswith("/") else input.split("/")[-1]
-            main_proj_directory = os.getcwd() + '/soccminer_temp/' + datetime.now().strftime(
-                "%d_%m_%Y_%H_%M_%S") + '/files_mode_input/'
-            proj_directory = main_proj_directory + '/' + proj_name
-        elif Platform.is_windows_platform():
-            proj_name = input.split("\\")[-2] if input.endswith("\\") else input.split("\\")[-1]
-            main_proj_directory = os.getcwd() + '\\soccminer_temp\\' + datetime.now().strftime(
-                "%d_%m_%Y_%H_%M_%S") + '\\files_mode_input\\'
-            proj_directory = main_proj_directory + '/' + proj_name
-
-        shutil.copytree(input, proj_directory)
-        if CommentsMiner.validate_inp_dir(proj_directory):
-            CommentsMiner.proj_url = main_proj_directory
-            return True
-        else:
-            print("Issue in processing input directory {} in files mode".format(input))
-            return False
 
     @classmethod
     def mining_warning_msg(cls, mining_status):
@@ -442,6 +379,7 @@ class CommentsMiner:
                     #  self.miner_status_flag = True
                     continue
 
+                print("")
                 print("Project #: {}, Project Name: {}".format(project_dict_ind + 1, project_name))
                 perf_obj = self.project_details_mstr_dict[project_dict_ind]
                 exception_msg_list = Utility.check_exception_directory(perf_obj.mined_entity_directory)
@@ -549,7 +487,7 @@ class CommentsMiner:
 
                     if project_name in self.exception_obj.warning_dict:
                         if self.exception_obj.warning_dict[project_name]:
-                            logging.warning("Potential {} Invalid Source Code Files for project: {}. Check Log for details."
+                            logging.warning("Potential Invalid Source Code Files for project {}"
                                          "".format(project_name, len(self.exception_obj.exception_dict[project_name])))
                 project_name = None
             except Exception as project_exception:
@@ -589,6 +527,11 @@ class CommentsMiner:
                     return False
                 else:
                     self.url = cloned_folder
+                    if Platform.is_unix_platform():
+                        self.url = self.url[:-1] if self.url.endswith('/') else self.url
+                    elif Platform.is_windows_platform():
+                        self.url = self.url[:-1] if self.url.endswith('\\') else self.url
+                    print("after repo download:",self.url)
                     if mode != 'single':
                         print("Mode cannot be multiple/files for GitHub project repository, forcing it to 'single'")
                         self.mode = 'single'
@@ -597,23 +540,11 @@ class CommentsMiner:
                 return False
         elif CommentsMiner.validate_inp_dir(input):
             self.url = input
-            if mode == 'single' and not load_proj_flag:
-                mode_validation_status = CommentsMiner.validate_single_mode_input(self.url)
-                if mode_validation_status:
-                    self.single_mode_processing_url = self.url
-                    self.url = CommentsMiner.proj_url
-                else:
-                    return False
-            elif mode == 'multiple' and not load_proj_flag:
+            if mode == 'multiple' and not load_proj_flag:
                 mode_validation_status = CommentsMiner.validate_multiple_mode_input(self.url)
                 if not mode_validation_status:
                     return False
-            elif mode == 'files' and not load_proj_flag:
-                mode_validation_status = CommentsMiner.validate_files_mode_input(self.url)
-                if mode_validation_status:
-                    self.url = CommentsMiner.proj_url
-                else:
-                    return False
+
         else:
             print("Issue with input ({})".format(input))
             self.invalid_ing_arg_flag = True
@@ -676,14 +607,32 @@ class CommentsMiner:
     def initiate_mining(self):
         project_instance = None
         mining_objects_list = []
+        single_mode_inp_dir_path = None
+
         logging.debug("initiate_mining() begins for {} containing {} programs".format(self.url, self.lang))
-        proj_dirs = CommentsMiner.get_repo_folders_to_process(self.url)
+        proj_dirs = None
+        if self.mode != 'multiple':
+            if '.' in self.url or '..' in self.url:
+                (single_mode_inp_dir_path, proj_dirs) = Utility.fetch_absolute_inp_dir(self.url)
+                proj_dirs = [proj_dirs]
+            else:
+                (single_mode_inp_dir_path, proj_dirs) = Utility.fetch_inp_dir(self.url)
+                proj_dirs = [proj_dirs]
+        else:
+            if Platform.is_unix_platform():
+                self.url = self.url+'/' if not self.url.endswith('/') else self.url
+            elif Platform.is_windows_platform():
+                self.url = self.url+'\\' if not self.url.endswith('\\') else self.url
+            proj_dirs = CommentsMiner.get_repo_folders_to_process(self.url)
         project_name = None
         logging.debug("Input directory path {}".format(self.url))
         for ind, proj_dir in enumerate(proj_dirs):
             try:
                 project_name = ""
-                absolute_dir = self.url + proj_dir
+                if self.mode == 'single':
+                    absolute_dir = single_mode_inp_dir_path + proj_dir
+                else:
+                    absolute_dir = self.url + proj_dir
                 self.proj_directories.append(absolute_dir)
                 logging.debug("absolute_dir: {}".format(absolute_dir))
 
@@ -767,6 +716,7 @@ class CommentsMiner:
                                                         self.project_directory, file_cntr, self.exception_obj, self.log))
                                 process.start()
                                 process.join()
+
                             except Exception as proc_files_ex:
                                 if self.log != 0:
                                     logging.error(
@@ -782,12 +732,13 @@ class CommentsMiner:
                                     error_file = exception_dir + xml_file.split("\\")[-1].replace(".java", ".error")
                                 with open(error_file, 'w') as writer:
                                     writer.write("{}".format(error_message))
-
                                 continue
+                        tracking_process.join()
                         TrackProgress.track_ast_parsing_progress(valid_file_count, processed_source_file_dir, exception_dir, project_name, self.mining_level)
                         load_msg = project_instance.load_project_from_json(self.project_directory, "package")
                         if load_msg != "success":
                             print("Encountered issue while loading for {}".format(project_name))
+                            logging.info("Encountered issue while loading for {}".format(project_name))
                         logging.debug("Type, # of packages from loaded project instance from json: {}, {}".format(type(project_instance).__name__,
                                                                                                                   len(project_instance.get_packages())))
                         project_instance.set_project_loc(project_instance.fetch_project_loc() / 1000)
@@ -809,9 +760,6 @@ class CommentsMiner:
                         #  Serialize project source file info and project meta
                         src_file_proj_info = {}
 
-                        #  to retain actual input url from temporary location
-                        if self.mode == 'single':
-                            src_files.loc = self.single_mode_processing_url
                         file_list = src_files.get_files()
                         proj_path = ''
                         proj_name_str = ''
@@ -861,7 +809,7 @@ class CommentsMiner:
                         self.empty_proj_flag.append(True)
                 else:
                     print("Invalid input project directory {}.  Please check your input.".format(absolute_dir))
-                    self.usage_warning()
+                    #self.usage_warning()
                     self.miner_status_flag = True
                     self.invalid_ing_arg_flag = True
             except Exception as proc_dir_ex:
@@ -1050,7 +998,7 @@ class CommentsMiner:
                                 print("{} pipeline is ready and can be used further containing {}'s comment details".format('CommentsMetaAttribute', project_name))
                             elif self.mining_level == 2:  # comprehensive_comment level
                                 self.proj_comments_all_attr_obj_list.append(ComprehensiveCommentsAttribute(project_instance))
-                                print("{} pipeline is ready and can be used further containing {}'s comprehensive comment context details}".format('ComprehensiveCommentsAttribute',
+                                print("{} pipeline is ready and can be used further containing {}'s comprehensive comment context details".format('ComprehensiveCommentsAttribute',
                                                                                                project_name))
                             elif self.mining_level == 3:  # project level
                                 self.proj_meta_attr_obj_list.append(JavaMetaAttribute(project_instance))

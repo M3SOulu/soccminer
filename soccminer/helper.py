@@ -1,10 +1,5 @@
-import itertools
-import time
-
 from soccminer.java_ast_parsing import SourceFiles
 from soccminer.environment import Platform
-#from alive_progress import alive_bar
-from lxml import etree
 import time
 import gc
 import traceback
@@ -17,51 +12,68 @@ import shutil
 
 class TrackProgress:
     @staticmethod
-    def fetch_approx_mining_eta(files, mining_level):
+    def fetch_approx_mining_eta(files, processed_file_count, mining_level, invocation_order):
         approx_eta_mins = 0.0
-        if mining_level == 1:
-            approx_eta_mins = (files / 15) / 60
-        elif mining_level == 2:
-            approx_eta_mins = (files / 5) / 60
-        elif mining_level == 3:
-            approx_eta_mins = (files / 2.5) / 60
-        elif mining_level == 4:
-            approx_eta_mins = (files / 1.5) / 60
-
+        if mining_level == 3 or mining_level == 4:
+            approx_eta_mins = (files - processed_file_count) / 60
+        else:
+            if invocation_order == 'first':
+                approx_eta_mins = (files / 15) / 60  # 15 is the estimated average based on tests
+            else:
+                approx_eta_mins = (files - processed_file_count) / 60
         return round(approx_eta_mins, 2)
 
     @staticmethod
     def track_ast_parsing_progress(total_files, processed_source_file_dir, error_file_dir, project_name, mining_level):
+        processed_file_count = 0
+        initial_proc_count = 0
+        timer = 0
+
         logging.info("track_ast_parsing_progress begins")
         if not os.path.isdir(processed_source_file_dir):
             os.makedirs(processed_source_file_dir)
         if not os.path.isdir(error_file_dir):
             os.makedirs(error_file_dir)
+        processed_file_count = TrackProgress.fetch_file_count(processed_source_file_dir, 'json') + TrackProgress.fetch_file_count(error_file_dir, 'error')
+        processed_file_count = 1 if processed_file_count == 0 else processed_file_count
         if os.path.isdir(processed_source_file_dir) and os.path.isdir(error_file_dir):
-            processed_files = TrackProgress.fetch_file_count(processed_source_file_dir, 'json') + TrackProgress.fetch_file_count(error_file_dir, 'error')
-            processed_files = 1 if processed_files == 0 else processed_files
+            tot_processed_count = processed_file_count
+            approx_eta = TrackProgress.fetch_approx_mining_eta(total_files, processed_file_count, mining_level, 'first')
 
-            approx_eta_mins = TrackProgress.fetch_approx_mining_eta(total_files, mining_level)
-
-            if total_files != processed_files:
-                print('\r {} - Mining source files completed for {}/{}. Approx ETA for completion {} minute/s'.format(project_name, processed_files, total_files, approx_eta_mins), sep='', end='', flush=True)
+            if total_files != processed_file_count:
+                if approx_eta <= 60:
+                    print('\r {} - Mining source files completed for {}/{}. Approx ETA for completion {} minutes'.format(project_name, processed_file_count, total_files, approx_eta), sep='', end='', flush=True)
+                elif approx_eta > 60:
+                    approx_eta = round(approx_eta/60, 2)
+                    print('\r {} - Mining source files completed for {}/{}. Approx ETA for completion {} hours'.format(project_name, processed_file_count, total_files, approx_eta), sep='', end='', flush=True)
             else:
-                approx_eta_mins = 0.0
-                print('\r {} - Mining source files completed for {}/{}. Approx ETA for completion {} minute/s \n'.format(project_name, processed_files, total_files, approx_eta_mins), sep='', end='', flush=True)
-                return True
+                approx_eta = 0.0
+                print('\r {} - Mining source files completed for {}/{}. Approx ETA for completion {} minutes \n'.format(project_name, processed_file_count, total_files, approx_eta), sep='', end='', flush=True)
             logging.info("Total valid files for progress tracking: {}".format(total_files))
-            while processed_files <= total_files:
-                approx_eta_mins = TrackProgress.fetch_approx_mining_eta(total_files - processed_files, mining_level)
-                print('\r {} - Mining source files completed for {}/{}. Approx ETA for completion {} minute/s'.format(project_name, processed_files, total_files, approx_eta_mins), sep='', end='', flush=True)
-                if total_files == processed_files:
-                    logging.debug("Total files {} == processed_files {}".format(total_files, processed_files))
+
+            while processed_file_count <= total_files:
+                if timer == 600:
+                    if processed_file_count == initial_proc_count:
+                        logging.info("Unexpected behaviour process taking too long to mine a file, forcing the monitoring process to exit")
+                        processed_file_count = total_files
+                approx_eta = TrackProgress.fetch_approx_mining_eta(total_files, processed_file_count, mining_level, 'non-first')
+                if approx_eta <= 60:
+                    print('\r {} - Mining source files completed for {}/{}. Approx ETA for completion {} minutes'.format(project_name, processed_file_count, total_files, approx_eta), sep='', end='', flush=True)
+                elif approx_eta > 60:
+                    approx_eta = round(approx_eta / 60, 2)
+                    print('\r {} - Mining source files completed for {}/{}. Approx ETA for completion {} hours'.format(project_name, processed_file_count, total_files, approx_eta), sep='', end='', flush=True)
+                if total_files == processed_file_count:
+                    logging.debug("Total files {} == processed_file_count {}".format(total_files, processed_file_count))
                     break
                 else:
                     time.sleep(3)
-                    processed_files = TrackProgress.fetch_file_count(processed_source_file_dir, 'json') + TrackProgress.fetch_file_count(
-                    error_file_dir, 'error')
-                    logging.info("Fetching processed_files after sleep {}".format(processed_files))
+                    processed_file_count = TrackProgress.fetch_file_count(processed_source_file_dir, 'json') + TrackProgress.fetch_file_count(error_file_dir, 'error')
+                    timer += 3
+                    if timer == 3:
+                        initial_proc_count = processed_file_count
+                    logging.info("Fetching processed_file_count after sleep {}".format(processed_file_count))
         logging.info("track_ast_parsing_progress ends")
+
 
     @staticmethod
     def fetch_file_count(dir, file_type):
@@ -243,6 +255,23 @@ class ASTHelper:
 
 
 class Utility:
+
+    @staticmethod
+    def fetch_absolute_inp_dir(input_url):
+        existing_cwd = os.getcwd()
+        os.chdir(input_url)
+        input_absolute = os.getcwd()
+        print("input absolute: {}".format(input_absolute))
+        os.chdir(existing_cwd)
+        return Utility.fetch_inp_dir(input_absolute)
+
+    @staticmethod
+    def fetch_inp_dir(input_url):
+        if Platform.is_unix_platform():
+            return input_url[:input_url.rindex('/')+1], input_url[input_url.rindex('/')+1:]
+        elif Platform.is_windows_platform():
+            return input_url[:input_url.rindex('\\')+1], input_url[input_url.rindex('\\')+1:]
+
     @staticmethod
     def clear_temp_folders():
         temp_dir = ''
@@ -275,12 +304,14 @@ class Utility:
             return False
         except Exception as pexcep:
             error_message = traceback.format_exc()
+            logging.info("Unexpected exception occurred while validating environment for srcML, ERROR: {}".format(error_message))
             print("Unexpected exception occurred while validating environment for srcML, ERROR: {}".format(error_message))
             return False
         if ret_code is not None and ret_code == 0:
-            logging.info("srcML dependency validated. Environment dependency validation cleared for SoCCMiner")
+            logging.info("srcML dependency validated. Environment dependency satisfied for SoCCMiner")
             return True
         else:
+            logging.info("Environment dependency validation failed for SoCCMiner, srcML unavailable in environment.")
             print("Environment dependency validation failed for SoCCMiner, srcML unavailable in environment.")
             return False
 

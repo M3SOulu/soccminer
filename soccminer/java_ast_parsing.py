@@ -452,7 +452,7 @@ class XmlProperties:
         except OSError as e:
             self.logger.error(
                 "Unable to create/delete entity directory {} ~ Process failed".format(instance_identifier))
-            Utility.clear_temp_folders()
+            #Utility.clear_temp_folders()
             raise Exception("Comments Miner failed as entity directory creation failed")
         else:
             # append unique counter to make distinct json file xml_file_num
