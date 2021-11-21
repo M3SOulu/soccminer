@@ -73,4 +73,4 @@ serve as pipelines for AI applications.
 ````
 $ python3 soccminer_comments.py
 ````
-Similarly other scripts caes fp
+Similarly other scripts (pipelines) can be executed.
