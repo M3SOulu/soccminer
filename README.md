@@ -70,7 +70,7 @@ Before execution, do not forget to change the input directories for mining and l
 One can mine the repos in one location, zip and transfer to another location, then mined_entities are 
 unzipped and the folder location is given as input to the loading_project call, then the loaded objects
 serve as pipelines for AI applications.
-
-$python3 soccminer_comments.py
-
+````
+$ python3 soccminer_comments.py
+````
 Similarly other scripts caes fp
