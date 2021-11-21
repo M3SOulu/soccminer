@@ -20,7 +20,7 @@ Not mandatory but it is recommended to create a virtualenv.
 $ virtualenv -p python3 <venv_name> 
 $ source <venv_name>/bin/activate
 ````
-Clone the repository \
+Clone the repository 
 ````
 $ git clone https://github.com/M3SOulu/soccminer 
 $ cd soccminer
