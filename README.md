@@ -17,22 +17,24 @@ SoCC-Miner
 # Installation
 Not mandatory but it is recommended to create a virtualenv.
 ````
-$ virtualenv -p python3 <venv_name> \
+$ virtualenv -p python3 <venv_name> 
 $ source <venv_name>/bin/activate
 ````
 Clone the repository \
-$ git clone https://github.com/M3SOulu/soccminer \
+````
+$ git clone https://github.com/M3SOulu/soccminer 
 $ cd soccminer
-
+````
 Install the dependencies.
 - srcML installation - Install the appropriate srcML client corresponding to your OS (Linux/Windows). https://www.srcml.org/#download
 
 - Installing soccminer will install the required dependencies and then the soccminer package. \
-
+````
 $ pip3 install soccminer
+````
 
 # Usage from commandline
-Usage: python3 bin/main.py -i /usr/local/project_repository_for_analysis/ -lvl comment
+Usage: python3 soccminer/bin/main.py -i /usr/local/project_repository_for_analysis/ 
 
 Options:
 - i      - (--input) Defines the input to the tool. (**Mandatory argument**) Can be 'local_dir' containing project repositories as sub-directories or 'Git Repo URL'.  
