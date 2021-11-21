@@ -1,13 +1,15 @@
-.. image:: _static/soccminer_logo.png
-   :align: center
+![Source Code Comments Miner](https://github.com/M3SOulu/soccminer/blob/main/soccminer_image.png? | width=200)
 
-============
+
 SoCC-Miner
 ============
 
 **SoCC-Miner** (Source Code-Comments Miner), a novel tool that extracts natural language, contextual source code fragments, source code construct level attributes from raw source code and offers different data pipelines that can be easily used in different use cases in Software Engineering (Source code Summarization, Program Comprehension, Automatic Comment scoping and generation). It is novel as in it can mine and extract entity level natural language text and attributes. For example in Java project: package level, class level, interface level, method level, static block level source code comments and multiple associated attributes can be mined.  Currently, it supports only Java projects. It offers four different pipelines: 
 
-- 
+- CommentsMetaAttribute (Contains basic comment info)
+- ComprehensiveCommentsAttribute (Contains extensive comment context info)
+- JavaMetaAttribute (Contains project entity attributes)
+- JavaMiner (Combines ComprehensiveCommentsAttribute and JavaMetaAttribute)
  
 
 # Installation
