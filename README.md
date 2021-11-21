@@ -1,4 +1,6 @@
-![Source Code Comments Miner](https://github.com/M3SOulu/soccminer/blob/main/soccminer.png)
+<p align="center">
+  <img src="https://github.com/M3SOulu/soccminer/blob/main/soccminer.png?raw=true" alt="Source Code Comments Miner"/>
+</p>
 
 
 SoCC-Miner
