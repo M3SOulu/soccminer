@@ -1,4 +1,4 @@
-![Source Code Comments Miner](https://github.com/M3SOulu/soccminer/blob/main/soccminer_image.png? | width=200)
+![Source Code Comments Miner](https://github.com/M3SOulu/soccminer/blob/main/soccminer_image.png | width=200)
 
 
 SoCC-Miner
