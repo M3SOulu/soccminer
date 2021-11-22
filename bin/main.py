@@ -189,8 +189,8 @@ def main():
             SoCCMinerLogger(log, "")
         print("Instantiating from Main")
 
-        total_project_repositories = len(CommentsMiner.get_repo_folders_to_process(inp_dir))
-        logging.debug("Found {} project repositories in the input dir argument {}".format(total_project_repositories, inp_dir))
+        # total_project_repositories = len(CommentsMiner.get_repo_folders_to_process(inp_dir))
+        # logging.debug("Found {} project repositories in the input dir argument {}".format(total_project_repositories, inp_dir))
 
         logging.info("Input Mining Level: {}".format(m_level))
         logging.info("Input Load_Project: {}, {}".format(load_proj, load_proj_flag))

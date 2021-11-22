@@ -535,13 +535,17 @@ class XmlProperties:
         if Platform.is_unix_platform():
             proj_dir = proj_dir[:-1] if proj_dir.endswith('/') else proj_dir
             self.project_name = proj_dir.split('/')[-1].replace("/", "")
-            self.src_file_name = src_file_name.split(self.project_name)[-1].replace("/", ".")
-            self.src_file_name = self.src_file_name[1:] if self.src_file_name.startswith(".") else self.src_file_name
+            if '/' in self.src_file_name:
+                self.src_file_name = "/".join(src_file_name.split(self.project_name + '/')[1:]).replace("/", ".")
+                self.src_file_name = self.src_file_name.replace("..", "." + self.project_name + ".")
+                self.src_file_name = self.src_file_name[1:] if self.src_file_name.startswith(".") else self.src_file_name
         elif Platform.is_windows_platform():
             proj_dir = proj_dir[:-1] if proj_dir.endswith('\\') else proj_dir
             self.project_name = proj_dir.split('/')[-1].replace("\\", "")
-            self.src_file_name = src_file_name.split(self.project_name)[-1].replace("\\", ".")
-            self.src_file_name = self.src_file_name[1:] if self.src_file_name.startswith(".") else self.src_file_name
+            if "\\" in self.src_file_name:
+                self.src_file_name = "\\".join(src_file_name.split(self.project_name + '\\')[1:]).replace("\\", ".")
+                self.src_file_name = self.src_file_name.replace("..", "." + self.project_name + ".")
+                self.src_file_name = self.src_file_name[1:] if self.src_file_name.startswith(".") else self.src_file_name
 
         # FileInfo entity
         file_instance_obj = self.populate_instance("File")
