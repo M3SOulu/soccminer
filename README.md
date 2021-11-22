@@ -28,7 +28,7 @@ $ cd soccminer
 Install the dependencies.
 - srcML installation - Install the appropriate srcML client corresponding to your OS (Linux/Windows). https://www.srcml.org/#download
 
-- Installing soccminer will install the required dependencies and then the soccminer package. \
+- Installing soccminer will install the required dependencies and then the soccminer package. 
 ````
 $ pip3 install soccminer
 ````
