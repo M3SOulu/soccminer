@@ -14,7 +14,3 @@ version: 0.0.28a1
 date-released: 2021-11-18
 url: "https://github.com/M3SOulu/soccminer"
 
-cff = CFF::File.read('CITATION.cff')
-
-cff.to_bibtex
-cff.to_apalike
