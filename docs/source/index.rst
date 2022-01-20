@@ -1,31 +1,20 @@
-.. PySoccer documentation master file, created by
-   sphinx-quickstart on Mon Nov  1 23:35:33 2021.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
-Welcome to PySoccer's documentation!
-====================================
-**PySoccer**  is a Python API for mining and extracting natural language text
-from source code at entity level. The programming language construct (such as 
-package, class, method, etc.,) is referred to as *entity*. For now, PySoccer
-supports only Java programming language i.e., it can mine and extract entity
-level natural language text and attributes from Java projects, for example:
-package level, class level, interface level, method level, static block level 
-source code comments and multiple associated attributes can be mined. Further,
-the mined comments and attributes can be used in other python programs through
-API support.
-.. note::
-   This project is under active development.
+SoCCMiner - Source Code Comments Miner
+=======================================
+.. image:: _static/soccminer_transparent.png
+   :align: center
+   :width: 300
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+============
+SoCC-Miner
+============
+
+**SoCC-Miner** (Source Code-Comments Miner), a novel tool that extracts natural language, contextual source code fragments, source code construct level attributes from raw source code and offers different data pipelines for different use cases related with source code comments (for example: Source code Summarization, Program Comprehension, Automatic Comment scoping and generation). It is novel as in it can mine and extract entity level natural language text and contextual attributes. For example in Java project: package level, class level, interface level, method level, static block level source code comments and multiple associated attributes can be mined. Can be easily extended to mine other attributes or to create additional pipelines that can easily be integrated as data pipelines for AI networks. Currently, it supports only Java projects. It offers four different pipelines: 
+
+- **CommentsMetaAttribute** - Contains basic comment attributes such as Comment Content, Comment Line Number in the source file and the name of the source file.
+- **ComprehensiveCommentsAttribute** - Contains comprehensive contextual attributes pertaining to the comment such as the preceding and succeeding source code, type of comment, category of comment (i.e., header or non-header comment), comment level and other attributes.
+- **JavaMetaAttribute** - Contains the attributes pertaining to the source code entities in the project. The programming language construct (such as package, class, method, etc.,) is referred to as entity.
+- **JavaMiner** - Combines ComprehensiveCommentsAttribute and JavaMetaAttribute pipelines.
+ 
 
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
