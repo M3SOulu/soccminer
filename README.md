@@ -12,7 +12,8 @@ SoCC-Miner
 - ComprehensiveCommentsAttribute (Contains extensive comment context info)
 - JavaMetaAttribute (Contains project entity attributes)
 - JavaMiner (Combines ComprehensiveCommentsAttribute and JavaMetaAttribute)
- 
+
+More details are available at https://m3soulu.github.io/soccminer/docs/build/html/main.html
 
 # Installation
 Not mandatory but it is recommended to create a virtualenv.
