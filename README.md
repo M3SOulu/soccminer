@@ -34,8 +34,10 @@ $ pip3 install soccminer
 ````
 
 # Usage from commandline
-Usage: python3 bin/main.py -i /usr/local/project_repository_for_analysis/ 
-
+Usage: python3 
+````
+bin/main.py -i /usr/local/project_repository_for_analysis/ 
+````
 Options:
 - i      - (--input) Defines the input to the tool. (**Mandatory argument**) Can be 'local_dir' containing project repositories as sub-directories or 'Git Repo URL'.  
 		
