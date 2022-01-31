@@ -8,6 +8,7 @@ import os
 import logging
 import requests
 import shutil
+from datetime import datetime
 
 
 class TrackProgress:
@@ -42,20 +43,23 @@ class TrackProgress:
 
             if total_files != processed_file_count:
                 if approx_eta <= 60:
+                    print("", sep='', end='', flush=True)
                     print('\r {} - Mining source files completed for {}/{}. Approx ETA for completion {} minutes'.format(project_name, processed_file_count, total_files, approx_eta), sep='', end='', flush=True)
                 elif approx_eta > 60:
                     approx_eta = round(approx_eta/60, 2)
                     print('\r {} - Mining source files completed for {}/{}. Approx ETA for completion {} hours'.format(project_name, processed_file_count, total_files, approx_eta), sep='', end='', flush=True)
             else:
-                approx_eta = 0.0
-                print('\r {} - Mining source files completed for {}/{}. Approx ETA for completion {} minutes \n'.format(project_name, processed_file_count, total_files, approx_eta), sep='', end='', flush=True)
+                logging.info("{} - Mining source files completed for {}/{}".format(project_name, processed_file_count, total_files))
+                #approx_eta = 0.0
+                #print('\r {} - Mining source files completed for {}/{}. Approx ETA for completion {} minutes \n'.format(project_name, processed_file_count, total_files, approx_eta), sep='', end='', flush=True)
             logging.info("Total valid files for progress tracking: {}".format(total_files))
 
             while processed_file_count <= total_files:
-                if timer == 600:
+                if timer == 1800:
                     if processed_file_count == initial_proc_count:
-                        logging.info("Unexpected behaviour process taking too long to mine a file, forcing the monitoring process to exit")
+                        logging.info("Unexpected behaviour process taking too long to mine a file, stopping mining process")
                         processed_file_count = total_files
+                    timer = 0
                 approx_eta = TrackProgress.fetch_approx_mining_eta(total_files, processed_file_count, mining_level, 'non-first')
                 if approx_eta <= 60:
                     print('\r {} - Mining source files completed for {}/{}. Approx ETA for completion {} minutes'.format(project_name, processed_file_count, total_files, approx_eta), sep='', end='', flush=True)
@@ -78,6 +82,7 @@ class TrackProgress:
     @staticmethod
     def fetch_file_count(dir, file_type):
         dir_obj = SourceFiles(dir)
+
         dir_obj.fetch_source_files(dir, file_type)
         file_count = len(dir_obj.get_files())
         del dir_obj
@@ -257,16 +262,132 @@ class ASTHelper:
 class Utility:
 
     @staticmethod
+    def validate_entity_folder(url):
+        if Platform.is_unix_platform():
+            url = url if url.endswith('/') else url + '/'
+        elif Platform.is_windows_platform():
+            url = url if url.endswith('\\') else url + '\\'
+        for dir_item in os.listdir(url):
+            if os.path.isfile(url + dir_item):
+                if dir_item.endswith('.json'):
+                    return True
+        return False
+
+    @staticmethod
+    def is_dir(dir_loc):
+        # validate if dir
+        return os.path.exists(dir_loc) and os.path.isdir(dir_loc)
+
+    @staticmethod
+    def is_empty_dir(dir_loc):
+        # validate if empty dir
+        return os.listdir(dir_loc)
+
+    @staticmethod
+    def validate_inp_dir(dir_loc):
+        # validate if dir exists and not empty
+        if Utility.is_dir(dir_loc):
+            if Utility.is_empty_dir(dir_loc):  # if returned list has file entry items allow process
+                return True
+            else:
+                print("Empty input directory {}".format(dir_loc))
+                return False
+        else:
+            print("Input {} is not a directory".format(dir_loc))
+            return False
+
+    @staticmethod
+    def get_repo_folders_to_process(local_loc):
+        proj_dirs = None
+        logging.debug("get_repo_folders_to_process() begins for {}".format(local_loc))
+        validate_dir_rc = Utility.validate_inp_dir(local_loc)
+        if validate_dir_rc:
+            proj_dirs = os.listdir(local_loc)
+            for proj in proj_dirs:
+                logging.debug("Folders to be processed: {}".format(proj))
+        else:
+            logging.debug(
+                "Input directory {} is either empty or does not contain with return value {}".format(local_loc,
+                                                                                                     validate_dir_rc))
+        return proj_dirs
+
+    @staticmethod
+    def multiple_mode_projects_for_loading(url):
+        project_dir = ''
+        proj_entity_dirs = Utility.get_repo_folders_to_process(url)
+        project_name = ""
+        for ind, proj_dir in enumerate(proj_entity_dirs):
+            if Platform.is_unix_platform():
+                if not url.endswith("/"):
+                    url = url + '/'
+            if Platform.is_windows_platform():
+                if not url.endswith("\\"):
+                    url = url + '\\'
+            project_name = ""
+            absolute_dir = url + proj_dir
+
+            if os.path.isfile(absolute_dir):
+                logging.info("Files cannot be present at this level while loading project, hence skipping {}".format(absolute_dir))
+                print("Encountered file instead of directory for project loading, hence skipping {}".format(absolute_dir))
+                continue
+
+            if Utility.validate_entity_folder(project_dir):
+                logging.info("Project JSON not found in the input folder {}. Not a valid SoCC-Miner Mined Entity folder. Exiting SoCCMiner.".format(project_dir))
+                logging.info("Skipping for loading")
+            else:
+                project_dir = (Utility.create_temp_dir_for_loading(absolute_dir, 'multiple'))
+        if Platform.is_unix_platform():
+            return os.getcwd() + '/soccminer_temp/multiple'
+        elif Platform.is_windows_platform():
+            return os.getcwd() + '\\soccminer_temp\\multiple'
+
+
+    @staticmethod
+    def create_temp_dir_for_loading(url, mode):
+        proj_directory = ''
+        inner_proj_directory = ''
+        if Platform.is_unix_platform():
+            proj_name = url.split("/")[-2] if url.endswith("/") else url.split("/")[-1]
+            main_load_proj_directory = ''
+            inner_proj_directory = ''
+            if mode == 'single':
+                main_load_proj_directory = os.getcwd() + '/soccminer_temp/' + datetime.now().strftime(
+                    "%d_%m_%Y_%H_%M_%S") + '/'
+                inner_proj_directory = main_load_proj_directory + proj_name
+            elif mode == 'multiple':
+                main_load_proj_directory = os.getcwd() + '/soccminer_temp/'
+                inner_proj_directory = main_load_proj_directory + 'multiple'
+            proj_directory = inner_proj_directory + '/' + proj_name
+        elif Platform.is_windows_platform():
+            proj_name = url.split("\\")[-2] if url.endswith("\\") else url.split("\\")[-1]
+            main_load_proj_directory = ''
+            inner_proj_directory = ''
+            if mode == 'single':
+                main_load_proj_directory = os.getcwd() + '\\soccminer_temp\\' + datetime.now().strftime(
+                    "%d_%m_%Y_%H_%M_%S") + '\\'  # + '\\single_mode_input_load_proj\\'
+                inner_proj_directory = main_load_proj_directory + proj_name
+            elif mode == 'multiple':
+                main_load_proj_directory = os.getcwd() + '\\soccminer_temp\\'
+                inner_proj_directory = main_load_proj_directory + 'multiple'
+            proj_directory = inner_proj_directory + '\\' + proj_name
+        shutil.copytree(url, proj_directory)
+        return inner_proj_directory
+
+    @staticmethod
     def fetch_absolute_inp_dir(input_url):
         existing_cwd = os.getcwd()
         os.chdir(input_url)
         input_absolute = os.getcwd()
         print("input absolute: {}".format(input_absolute))
         os.chdir(existing_cwd)
-        return Utility.fetch_inp_dir(input_absolute)
+        return input_absolute
 
     @staticmethod
     def fetch_inp_dir(input_url):
+        if Platform.is_unix_platform():
+            input_url = input_url[:-1] if input_url.endswith('/') else input_url
+        elif Platform.is_windows_platform():
+            input_url = input_url[:-1] if input_url.endswith('\\') else input_url
         if Platform.is_unix_platform():
             return input_url[:input_url.rindex('/')+1], input_url[input_url.rindex('/')+1:]
         elif Platform.is_windows_platform():

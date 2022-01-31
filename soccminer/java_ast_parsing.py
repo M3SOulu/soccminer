@@ -1396,6 +1396,8 @@ class XmlProperties:
             return "Package"
         elif type(comment_parent_instance).__name__ == "EnumInfo":
             return "Enum"
+        elif type(comment_parent_instance).__name__ == "FileInfo":
+            return "File"
 
     def fetch_element_attribute(self, element, attribute_name=None):
         if attribute_name is not None:
@@ -1617,7 +1619,6 @@ class XmlProperties:
             srcml_obj = SourceML()
             comment_instance.set_succeeding_code(srcml_obj.fetch_code_from_srcml(copy(comment_instance.get_succeeding_element())))
             # preceding code - must be invoked after setting preceding element
-
             comment_instance.set_preceding_code(srcml_obj.fetch_code_from_srcml(copy(comment_instance.get_preceding_element())))
 
         self.create_dir(self.project_comments_dir)

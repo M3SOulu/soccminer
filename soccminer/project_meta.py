@@ -276,7 +276,7 @@ class JavaProjectMeta(ProjectMeta):
             file_comments_dir = proj_dir + '/' + type(FileInfo()).__name__ + '/comments/'
         elif Platform.is_windows_platform():
             package_attr_dir = proj_dir + '\\' + type(PackageInfo()).__name__ + '\\attributes\\'
-            package_comments_dir = proj_dir + '\\' + type(ClassInfo()).__name__ + '\\comments\\'
+            package_comments_dir = proj_dir + '\\' + type(PackageInfo()).__name__ + '\\comments\\'
             class_attr_dir = proj_dir + '\\' + type(ClassInfo()).__name__ + '\\attributes\\'
             class_comments_dir = proj_dir + '\\' + type(ClassInfo()).__name__ + '\\comments\\'
             interface_attr_dir = proj_dir + '\\' + type(InterfaceInfo()).__name__ + '\\attributes\\'
@@ -421,7 +421,7 @@ class JavaProjectMeta(ProjectMeta):
                     enum_obj.set_enum_loc(enum_info_dict['Enum_LOC'])
                     enum_obj.set_enum_line_no(enum_info_dict['Enum_Line_No'])
                     enum_obj.set_enum_source(enum_info_dict['Enum_Source_File'])
-                    self.append_project_class(enum_obj)
+                    self.append_project_enum(enum_obj)
             if miner_params['mining_level'] != 3:
                 comment_info = SerializeSoCCMiner.load_comment_info(enum_comments_dir)
                 if len(comment_info) > 0:

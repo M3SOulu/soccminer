@@ -22,8 +22,8 @@ def demo(cm):
             print("Comment type: {}".format(comprehensive_comments_obj.comment_type))
 
         # fetch package level comprehensive comments
-        print("total comprehensive comments: {}".format(proj.get_comprehensive_package_comment_attr()))
-        for comprehensive_comments_obj in proj.get_comprehensive_package_comment_attr():
+        print("total comprehensive comments: {}".format(len(proj.get_comprehensive_file_comment_attr())))
+        for comprehensive_comments_obj in proj.get_comprehensive_file_comment_attr():
             print("Comment content: {}".format(comprehensive_comments_obj.comment_text))
             print("Comment line #: {}".format(comprehensive_comments_obj.comment_line_no))
             print("Comment source file: {}".format(comprehensive_comments_obj.file_name))

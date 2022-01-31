@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='soccminer',
-    version='0.0.23a1',
+    version='0.0.34a1',
     packages=['soccminer'],
     scripts=['bin/main.py'],
     classifiers=[
@@ -12,7 +12,7 @@ setup(
         'Topic :: Text Processing :: Linguistic',
       ],
     platforms='Linux',
-    url='https://github.com/M3SOulu/SoCC-Miner',
+    url='https://github.com/M3SOulu/soccminer',
     license='MIT',
     author='da_enthusiast',
     author_email='dataapproximation.enthusiast@gmail.com',

@@ -385,11 +385,11 @@ class JavaMetaAttribute(ProjectAttributes):
                 :rtype: list
         """
         file_meta = []
-        for source_file_obj in self.project_instance.get_packages():
+        for source_file_obj in self.project_instance.get_files():
             file_obj = JavaFileMeta()
-            file_obj.set_file_name(source_file_obj.get_file_name())
-            file_obj.set_file_loc(source_file_obj.get_file_loc())
-            file_obj.set_file_comment_count(source_file_obj.get_file_comment_count())
+            file_obj.set_file_name(source_file_obj.source_file_name) # .get_file_name())
+            file_obj.set_file_loc(source_file_obj.file_loc) #.get_file_loc())
+            file_obj.set_file_comment_count(source_file_obj.total_comments) #.get_file_comment_count())
             file_meta.append(file_obj)
         return file_meta
 
@@ -443,13 +443,13 @@ class JavaMetaAttribute(ProjectAttributes):
         """
         enum_meta = []
         for enum_obj in self.project_instance.get_enums():
-            enm_obj = JavaClassMeta()
-            enm_obj.set_class_name(enum_obj.get_enum_name())
-            enm_obj.set_class_specifier(enum_obj.get_enum_specifier())
-            enm_obj.set_class_line_no(enum_obj.get_enum_line_no())
-            enm_obj.set_class_signature(enum_obj.get_enum_signature())
-            enm_obj.set_class_loc(enum_obj.get_enum_loc())
-            enm_obj.set_class_source(enum_obj.get_enum_source())
+            enm_obj = JavaEnumMeta()
+            enm_obj.set_enum_name(enum_obj.get_enum_name())
+            enm_obj.set_enum_specifier(enum_obj.get_enum_specifier())
+            enm_obj.set_enum_line_no(enum_obj.get_enum_line_no())
+            enm_obj.set_enum_signature(enum_obj.get_enum_signature())
+            enm_obj.set_enum_loc(enum_obj.get_enum_loc())
+            enm_obj.set_enum_source(enum_obj.get_enum_source())
             enum_meta.append(enm_obj)
         return enum_meta
 

@@ -119,7 +119,7 @@ class SerializeSoCCMiner:
         SerializeSoCCMiner.write_json_file(file_name, src_file_info)
 
     @staticmethod
-    def serialize_project_comments_meta_info(project_comments:list):
+    def serialize_project_comments_meta_info(project_comments: list):
         project_meta = {}
         comment_info = {}
         comments = {}

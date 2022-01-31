@@ -636,8 +636,6 @@ class PackageInfo:
     def set_package_line_no(self,package_line_no):
         self.package_line_no = package_line_no
 
-###
-
 
 class FileInfo:
     def __init__(self):

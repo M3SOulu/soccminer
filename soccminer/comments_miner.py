@@ -191,7 +191,7 @@ class CommentsMiner:
         self.empty_proj_flag = []  # Contains boolean indicating if a project is empty, i.e., no source code file
         self.soccminer_cfg_file = None
         self.log_dir = SoCCMinerLogger.log_dir
-        self.mined_entity_dir = None
+        self.mined_entity_dir = []
         self.log_file_obj = None
 
         logging.debug("Setting soccminer parameters")
@@ -237,18 +237,23 @@ class CommentsMiner:
 
     def load_after_mining(self):
         print("", sep='', end='', flush=True)
+        entity_dir = []
         # resetting input directory to mined entities directory
         entity_dir = self.mined_entity_dir
-        print("Initiating loading. Preparing data pipelines with mined attributes from {} ".format(entity_dir))
-        if Platform.is_unix_platform():
-            if self.mode == 'multiple':
-                entity_dir = entity_dir[:-1] if entity_dir.endswith('/') else entity_dir
-                entity_dir = entity_dir[:entity_dir.rindex('/')]
-        elif Platform.is_windows_platform():
-            if self.mode == 'multiple':
-                entity_dir = entity_dir[:-1] if entity_dir.endswith('/') else entity_dir
-                entity_dir = entity_dir[:entity_dir.rindex('/')]
-        self.url = entity_dir
+
+        #for proj in entity_dir:
+        #    print("Initiating loading. Preparing data pipelines with mined attributes from {} ".format(proj))
+
+            #if Platform.is_unix_platform():
+            #    if self.mode == 'multiple':
+            #        proj = proj[:-1] if proj.endswith('/') else proj
+            #        proj = proj[:proj.rindex('/')]
+            #elif Platform.is_windows_platform():
+            #    if self.mode == 'multiple':
+            #        proj = proj[:-1] if proj.endswith('/') else proj
+            #        proj = proj[:proj.rindex('/')]
+        #    self.url = proj
+
         self.load_soccminer_entities()
         if self.load_status:
             logging.info("Project/s load successful")
@@ -272,6 +277,21 @@ class CommentsMiner:
     def is_empty_dir(dir_loc):
         # validate if empty dir
         return os.listdir(dir_loc)
+
+    @staticmethod
+    def get_repo_folders_to_process(local_loc):
+        proj_dirs = None
+        logging.debug("get_repo_folders_to_process() begins for {}".format(local_loc))
+        validate_dir_rc = Utility.validate_inp_dir(local_loc)
+        if validate_dir_rc:
+            proj_dirs = os.listdir(local_loc)
+            for proj in proj_dirs:
+                logging.debug("Folders to be processed: {}".format(proj))
+        else:
+            logging.debug(
+                "Input directory {} is either empty or does not contain with return value {}".format(local_loc,
+                                                                                                     validate_dir_rc))
+        return proj_dirs
 
     @staticmethod
     def validate_inp_dir(dir_loc):
@@ -324,30 +344,7 @@ class CommentsMiner:
     @classmethod
     def mining_warning_msg(cls, mining_status):
         if not mining_status:
-            logging.warning("Mining Comments failed, check log")
-        else:
-            logging.warning("Incorrect Mining level argument")
-            logging.warning(
-                "Mining Level - comment (for Basic Comment Attributes, "
-                "Mining Level - comprehensive_comment (for Comprehensive Comment Attributes")
-            logging.warning(
-                "Mining Level - project (for Project Meta Attributes, "
-                "Mining Level - all (for Comment and Project Meta attributes")
-
-    @staticmethod
-    def get_repo_folders_to_process(local_loc):
-        proj_dirs = None
-        logging.debug("get_repo_folders_to_process() begins for {}".format(local_loc))
-        validate_dir_rc = CommentsMiner.validate_inp_dir(local_loc)
-        if validate_dir_rc:
-            proj_dirs = os.listdir(local_loc)
-            for proj in proj_dirs:
-                logging.debug("Folders to be processed: {}".format(proj))
-        else:
-            logging.debug(
-                "Input directory {} is either empty or does not contain with return value {}".format(local_loc,
-                                                                                                     validate_dir_rc))
-        return proj_dirs
+            logging.warning("Encountered issue with SoCCMiner, probably incorrect attribute invoked for the chosen mining level. Please invoke the appropriate attribute for the chosen mining level")
 
     def fetch_load_status(self):
         load_status = True
@@ -475,13 +472,18 @@ class CommentsMiner:
                     logging.info("Project TOTAL_STATIC_BLOCKS_PROCESSED: {}".format(perf_obj.tot_static_blocks_processed))
 
                 for proj_dir in self.soccminer_proj_directories:
+
                     project_label = ''
                     if Platform.is_unix_platform():
-                        project_label = '/' + project_name
+                        project_label = 'SoCCMiner_Mined_Entities' + '/' + project_name
                     elif Platform.is_windows_platform():
-                        project_label = '\\' + project_name
-                    if project_label in proj_dir:
-                        self.mined_entity_dir = proj_dir
+                        project_label = 'SoCCMiner_Mined_Entities' + '\\' + project_name
+                    try:
+                        proj_entry_ind = proj_dir.index(project_label)
+                    except ValueError:
+                        logging.debug("Skipping entry {} as it is not the mined project url".format(proj_dir))
+                    else:
+                        self.mined_entity_dir.append(proj_dir)
                         print("Mined Entities for project {} are stored at {}".format(project_name, proj_dir))
                         logging.info("Mined Entities for project {} are stored at {}".format(project_name, proj_dir))
 
@@ -518,6 +520,7 @@ class CommentsMiner:
             if load_proj_flag == "false" or not load_proj_flag:
                 load_proj_flag = 0
         self.load_project = load_proj_flag
+
         if 'http' in input and 'github.com' in input:
             if RepoDownloader.validate_repo_url(input):
                 cloned_folder = RepoDownloader.clone_repo(input)
@@ -613,12 +616,13 @@ class CommentsMiner:
         proj_dirs = None
         if self.mode != 'multiple':
             if '.' in self.url or '..' in self.url:
-                (single_mode_inp_dir_path, proj_dirs) = Utility.fetch_absolute_inp_dir(self.url)
+                (single_mode_inp_dir_path, proj_dirs) = Utility.fetch_inp_dir(Utility.fetch_absolute_inp_dir(self.url))
                 proj_dirs = [proj_dirs]
             else:
                 (single_mode_inp_dir_path, proj_dirs) = Utility.fetch_inp_dir(self.url)
                 proj_dirs = [proj_dirs]
         else:
+            self.url = Utility.fetch_absolute_inp_dir(self.url)
             if Platform.is_unix_platform():
                 self.url = self.url+'/' if not self.url.endswith('/') else self.url
             elif Platform.is_windows_platform():
@@ -748,7 +752,7 @@ class CommentsMiner:
                         entity_count_dict = project_instance.populate_entity_stats(self.project_directory)
                         if empty_file_count != 0:
                             self.exception_obj.update_warning_message(project_name,
-                                                                      "Potential invalid source code or failed xml conversion, "
+                                                                      "Potential invalid source code or failed AST conversion, "
                                                                       "with {} empty files".format(empty_file_count))
 
                         process_end_time = time.time()
@@ -911,43 +915,30 @@ class CommentsMiner:
     def load_soccminer_entities(self):
         project_name = None
         proj_directory = ''
-        main_inp_url = ''
 
-        # validating for project json at the first level
-        json_file_exists = False
         if self.mode == 'single':
-            if Platform.is_unix_platform():
-                self.url = self.url if self.url.endswith('/') else self.url + '/'
-            elif Platform.is_windows_platform():
-                self.url = self.url if self.url.endswith('\\') else self.url + '\\'
-            for dir_item in os.listdir(self.url):
-                if os.path.isfile(self.url + dir_item):
-                    if dir_item.endswith('.json'):
-                        json_file_exists = True
+            if not self.load_project:
+                # for direct load project set as false, there is supposed to be only one mined entity dir in single mode
+                # validating for project json at the first level, for direct_load true, self.url should contain the entities.
+                self.url = self.mined_entity_dir[0]
 
-            if not json_file_exists:
+            if not Utility.validate_entity_folder(self.url):
                 print("Project JSON not found in the input folder {}. Not a valid SoCC-Miner Mined Entity folder. Exiting SoCCMiner.".format(self.url))
                 print("Please check the input folder or use the appropriate input mode single/multiple.")
                 self.load_status = False
                 return
-
-            inner_proj_directory = ''
-            if Platform.is_unix_platform():
-                proj_name = self.url.split("/")[-2] if self.url.endswith("/") else self.url.split("/")[-1]
-                main_load_proj_directory = os.getcwd() + '/soccminer_temp/' + datetime.now().strftime(
-                    "%d_%m_%Y_%H_%M_%S") + '/'
-                inner_proj_directory = main_load_proj_directory + proj_name
-                proj_directory = inner_proj_directory + '/' + proj_name
-            elif Platform.is_windows_platform():
-                proj_name = self.url.split("\\")[-2] if self.url.endswith("\\") else self.url.split("\\")[-1]
-                main_load_proj_directory = os.getcwd() + '\\soccminer_temp\\' + datetime.now().strftime(
-                    "%d_%m_%Y_%H_%M_%S") + '\\'  # + '\\single_mode_input_load_proj\\'
-                inner_proj_directory = main_load_proj_directory + proj_name
-                proj_directory = inner_proj_directory + '\\' + proj_name
-            shutil.copytree(self.url, proj_directory)
+            self.url = Utility.create_temp_dir_for_loading(self.url, self.mode)
+        elif self.mode == 'multiple':
             # copy the newly created project dir for single mode
-            main_inp_url = self.url
-            self.url = inner_proj_directory
+            # self.url = inner_proj_directory
+            # loading after mining for multiple projects, mined_entity_dir will contain
+            # successfully mined directories
+            if not self.load_project:
+                for proj_dir in self.mined_entity_dir:
+                    self.url = Utility.create_temp_dir_for_loading(proj_dir, self.mode)
+            elif self.load_project:
+                self.url = Utility.multiple_mode_projects_for_loading(self.url)
+
 
         logging.debug("load_soccminer_entities(): Validating dir: {}".format(self.url))
         if self.validate_inp_dir(self.url):
@@ -963,6 +954,15 @@ class CommentsMiner:
                             self.url = self.url + '\\'
                     project_name = ""
                     absolute_dir = self.url + proj_dir
+
+                    if os.path.isfile(absolute_dir):
+                        logging.info(
+                            "Files cannot be present at this level while loading project, hence skipping {}".format(
+                                absolute_dir))
+                        print(
+                            "Encountered file instead of directory for project loading, hence skipping {}".format(
+                                absolute_dir))
+                        continue
 
                     if Platform.is_unix_platform():
                         project_name = proj_dir.replace("/", "_")
