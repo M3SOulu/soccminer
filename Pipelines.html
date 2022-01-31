@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pipelines &mdash; SoCCMiner 0.0.26a1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Usage" href="Usage.html" />
+    <link rel="prev" title="Features" href="Features.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="main.html" class="icon icon-home"> SoCCMiner
+          </a>
+              <div class="version">
+                0.0.26a1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="About.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Features.html">Features</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Pipelines</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#commentsmetaattribute-pipeline">CommentsMetaAttribute Pipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#comprehensivecommentsattribute">ComprehensiveCommentsAttribute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#javametaattribute">JavaMetaAttribute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#javaminer">JavaMiner</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CommentsMiner.html">CommentsMiner</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="main.html">SoCCMiner</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="main.html" class="icon icon-home"></a> &raquo;</li>
+      <li><strong>Pipelines</strong></li>
+      <li class="wy-breadcrumbs-aside">
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/M3SOulu/soccminer" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pipelines">
+<h1><strong>Pipelines</strong><a class="headerlink" href="#pipelines" title="Permalink to this headline"></a></h1>
+<section id="commentsmetaattribute-pipeline">
+<h2>CommentsMetaAttribute Pipeline<a class="headerlink" href="#commentsmetaattribute-pipeline" title="Permalink to this headline"></a></h2>
+<p>This pipeline mines basic comment information such as comment content, the line number in the source file where it is located and the name of the source file.</p>
+<figure class="align-default" id="id1">
+<a class="reference internal image-reference" href="_images/comment_attributes.png"><img alt="_images/comment_attributes.png" src="_images/comment_attributes.png" style="width: 986.25px; height: 69.75px;" /></a>
+<figcaption>
+<p><span class="caption-text"><strong>A snapshot of CommentsMetaAttribute pipeline’s JSON</strong></span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="comprehensivecommentsattribute">
+<h2>ComprehensiveCommentsAttribute<a class="headerlink" href="#comprehensivecommentsattribute" title="Permalink to this headline"></a></h2>
+<p>This pipeline offers 17 contextual information for a source code comment. It includes all three attributes from the previous CommentsMetaAttribute pipeline along with:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>Comment_Assoc_Block_Node:</strong> Refers to the node of source code that spans a pair of curly braces Could be a conditional/loop/control/etc., block of statements.</p></li>
+<li><p><strong>Comment_Category:</strong> Indicates if a comment is either ‘HEADER’ or ‘NON_HEADER’ comment.</p></li>
+<li><p><strong>Comment_Content:</strong> Refers to the content of the comment.</p></li>
+<li><p><strong>Comment_First_Element_In:</strong> Indicates if the comment is located at the beginning i.e., immediately follows an opening curly brace’{’. For example, a comment may immediately follow a conditional/control/loop/other construct such as class/method/interface, etc., This is either True/False.</p></li>
+<li><p><strong>Comment_Last_Element_In:</strong> Indicates if the comment is located near the closure of a conditional/control/loop/other construct such as class/method/interface, etc., i.e., located just before a closing curly brace ‘}’. This is either True/False.</p></li>
+<li><p><strong>Comment_Immediate_Preceding_Source_Code:</strong> Refers to the actual source code block which immediately precedes a source code comment.</p></li>
+<li><p><strong>Comment_Immediate_Succeeding_Source_Code:</strong> Refers to the source code that follows a source code comment.</p></li>
+<li><p><strong>Comment_Level:</strong> Refers to the granular level of a comment, i.e., if a comment belongs to Package/File/Class/Interface/Method/Enumerator/Static Block level comment.</p></li>
+<li><p><strong>Comment_Line_No:</strong> Refers to the line number at which comment can be located in the source file.</p></li>
+<li><p><strong>Comment_Parent_Identifier:</strong> Refers to the identifier of a comment with the programming language constructs’ name such as Package/Class/Interface/Method/Enumerator name in the same hierarchy of its occurence. For example, package_name.class_name.method_signature if a comment is located in a method that belongs to a class which is part of a package.</p></li>
+<li><p><strong>Comment_Parent_Trace:</strong> Refers to the statement block that actually contains the comment in a file. This can be thought of as a relative location of a comment in a source file. When combined with Comment_Parent_Identifier, it refers to the absolute location of a comment in a file. If a comment is present just inside a method outside all statements inside a construct (class/method/interface, etc.,), the comment parent trace remains blank (null) indicating it is present inside the parent identifier.</p></li>
+<li><p><strong>Comment_Preceding_Node:</strong> Refers to the type of the statement block that is located just before a comment.</p></li>
+<li><p><strong>Comment_Succeedng_Node:</strong> Refers to the type of the statement block that is located just after a comment.</p></li>
+<li><p><strong>Comment_Source_File:</strong> Refers to the name of the source code file.</p></li>
+<li><p><strong>Comment_SubCategory:</strong> Indicates if a comment belongs to either  ‘BLOCK_LEVEL’ or ‘NON_BLOCK_LEVEL’, i.e., if a comment is located within a block of statements inside ‘{}’ curly braces. This is applicable only for ‘NON_HEADER’ category comments. The objective of this attribute is to identify if a header type of comment is embedded in another construct which will reveal the nested nature of a NON_HEADER comment.</p></li>
+<li><p><strong>Comment_SubCatg_Type:</strong> Indicates the statement block type of the Comment_SubCategory. This can be either ‘CONTROL’, or ‘EXCEPTION’, or ‘DECLARATION’, or ‘EXPRESSION’, or ‘CONSTRUCT_ENTITY’ (i.e. programming language constructs such as Class, Method, Interface, etc.,), or ‘OTHERS’.</p></li>
+<li><p><strong>Comment_Type:</strong> Indicates the type of comment either ‘BLOCK’ comment or ‘LINE’ comment.</p></li>
+</ul>
+</div></blockquote>
+<figure class="align-default" id="id2">
+<a class="reference internal image-reference" href="_images/compre_comment_attributes.png"><img alt="_images/compre_comment_attributes.png" src="_images/compre_comment_attributes.png" style="width: 987.0px; height: 258.75px;" /></a>
+<figcaption>
+<p><span class="caption-text"><strong>A snapshot ComprehensiveCommentsAttribute pipeline’s JSON</strong></span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="javametaattribute">
+<h2>JavaMetaAttribute<a class="headerlink" href="#javametaattribute" title="Permalink to this headline"></a></h2>
+<p>This pipeline mines the programming language construct attributes that constitutes a project. This is programming language specific. It mines a total of 30 attributes for all programming language constructs of a Java project including Package, File, Class, Interface, Method, Enumerator and, Static Block. The attributes typically include name, type (‘REGULAR’ or ‘DERIVED’), LOC (Lines of Code), signature, etc.,</p>
+<figure class="align-default" id="id3">
+<a class="reference internal image-reference" href="_static/project_attributes.png"><img alt="_static/project_attributes.png" src="_static/project_attributes.png" /></a>
+<figcaption>
+<p><span class="caption-text"><strong>A snapshot JavaMetaAttribute pipeline JSONs merged together for illustration</strong></span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="javaminer">
+<h2>JavaMiner<a class="headerlink" href="#javaminer" title="Permalink to this headline"></a></h2>
+<p>This pipeline combines ComprehensiveCommentsAttribute and JavaMetaAttribute. It mines a total of 47 attributes.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Features.html" class="btn btn-neutral float-left" title="Features" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Usage.html" class="btn btn-neutral float-right" title="Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

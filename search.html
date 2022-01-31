@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SoCCMiner - Source Code Comments Miner &mdash; SoCCMiner 0.0.26a1 documentation</title>
+  <title>Search &mdash; SoCCMiner 0.0.26a1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -16,8 +16,10 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="#" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -31,7 +33,7 @@
                 0.0.26a1
               </div>
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+  <form id="rtd-search-form" class="wy-form" action="#" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -60,10 +62,8 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="main.html" class="icon icon-home"></a> &raquo;</li>
-      <li>SoCCMiner - Source Code Comments Miner</li>
+      <li>Search</li>
       <li class="wy-breadcrumbs-aside">
-              <!-- User defined GitHub URL -->
-              <a href="https://github.com/M3SOulu/soccminer" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -71,21 +71,18 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="soccminer-source-code-comments-miner">
-<h1>SoCCMiner - Source Code Comments Miner<a class="headerlink" href="#soccminer-source-code-comments-miner" title="Permalink to this headline"></a></h1>
-<a class="reference internal image-reference" href="_images/soccminer_transparent.png"><img alt="_images/soccminer_transparent.png" class="align-center" src="_images/soccminer_transparent.png" style="width: 300px;" /></a>
-<section id="socc-miner">
-<h2>SoCC-Miner<a class="headerlink" href="#socc-miner" title="Permalink to this headline"></a></h2>
-<p><strong>SoCC-Miner</strong> (Source Code-Comments Miner), a novel tool that extracts natural language, contextual source code fragments, source code construct level attributes from raw source code and offers different data pipelines for different use cases related with source code comments (for example: Source code Summarization, Program Comprehension, Automatic Comment scoping and generation). It is novel as in it can mine and extract entity level natural language text and contextual attributes. For example in Java project: package level, class level, interface level, method level, static block level source code comments and multiple associated attributes can be mined. Can be easily extended to mine other attributes or to create additional pipelines that can easily be integrated as data pipelines for AI networks. Currently, it supports only Java projects. It offers four different pipelines:</p>
-<ul class="simple">
-<li><p><strong>CommentsMetaAttribute</strong> - Contains basic comment attributes such as Comment Content, Comment Line Number in the source file and the name of the source file.</p></li>
-<li><p><strong>ComprehensiveCommentsAttribute</strong> - Contains comprehensive contextual attributes pertaining to the comment such as the preceding and succeeding source code, type of comment, category of comment (i.e., header or non-header comment), comment level and other attributes.</p></li>
-<li><p><strong>JavaMetaAttribute</strong> - Contains the attributes pertaining to the source code entities in the project. The programming language construct (such as package, class, method, etc.,) is referred to as entity.</p></li>
-<li><p><strong>JavaMiner</strong> - Combines ComprehensiveCommentsAttribute and JavaMetaAttribute pipelines.</p></li>
-</ul>
-</section>
-</section>
+  <noscript>
+  <div id="fallback" class="admonition warning">
+    <p class="last">
+      Please activate JavaScript to enable the search functionality.
+    </p>
+  </div>
+  </noscript>
 
+  
+  <div id="search-results">
+  
+  </div>
 
            </div>
           </div>
@@ -111,7 +108,14 @@
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+  <script>
+    jQuery(function() { Search.loadIndex("searchindex.js"); });
+  </script>
+  
+  <script id="searchindexloader"></script>
+   
+
 
 </body>
 </html>
