@@ -46,17 +46,13 @@
 <li class="toctree-l1"><a class="reference internal" href="Pipelines.html">Pipelines</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#commandline-usage">Commandline Usage</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#commentsmetaattribute-pipeline">CommentsMetaAttribute Pipeline</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#comprehensivecommentsattribute-pipeline">ComprehensiveCommentsAttribute Pipeline</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#javametaattribute-pipeline">JavaMetaAttribute Pipeline</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#javaminer-pipeline">JavaMiner Pipeline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mining">Mining</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#loading">Loading</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#api">API</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id1">CommentsMetaAttribute Pipeline</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id2">ComprehensiveCommentsAttribute Pipeline</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id3">JavaMetaAttribute Pipeline</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id4">JavaMiner Pipeline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Mining</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Loading</a></li>
 </ul>
 </li>
 </ul>
@@ -94,74 +90,31 @@
 <p>SoCCMiner’s commandline usage can be used for quick ad-hoc source code mining and it can also be used in API calls for use in conjunction with other programs or applications.</p>
 <section id="commandline-usage">
 <h2>Commandline Usage<a class="headerlink" href="#commandline-usage" title="Permalink to this headline"></a></h2>
-<p>SoCCMiner expects project repositories as input, i.e, it expects an input directory location that contains project folders, if there are non-project folders they will be treated as project folders and will attempt to mine source code files. SoCCMiner can mine multiple project repositories at once through the “multiple” mode option.</p>
-<section id="commentsmetaattribute-pipeline">
-<h3>CommentsMetaAttribute Pipeline<a class="headerlink" href="#commentsmetaattribute-pipeline" title="Permalink to this headline"></a></h3>
-<ul class="simple">
-<li><p><strong>Mining:</strong>
-Note that mining the project directory loads the project for immediate use or the serialized mining data can be loaded separately.  SoCCMiner supports loading of the mined data as a separate functionality also. The mining will create a directory “SoccMiner_Mined_Entities” that contains the granular attributes and comments in individual directories. By default, this directory will be available in the current directory of SoCCMiner program. The following command mines the project microsoft_appcenter-sampleapp-android for basic comments.</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="nb">bin</span><span class="o">/</span><span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">repositories_to_be_mined</span><span class="o">/</span><span class="n">microsoft_appcenter</span><span class="o">-</span><span class="n">sampleapp</span><span class="o">-</span><span class="n">android</span> <span class="o">-</span><span class="n">lvl</span> <span class="n">comment</span>
+<p>SoCCMiner expects project repositories as input, i.e, it expects an input directory location that contains only project folders, if there are non-project folders they will be treated as project folders and SoCCMiner will attempt to mine source code files. SoCCMiner can mine multiple project repositories at once through the <strong>“multiple”</strong> mode option.</p>
+<section id="mining">
+<h3>Mining<a class="headerlink" href="#mining" title="Permalink to this headline"></a></h3>
+<p>The input url for mining can be either github repository url or the local directory containing project repository/ies. Note that mining the project directory loads the project for immediate use without having to invoke a separate call for loading. Or the serialized mining data can be loaded separately in other programs/applications.  SoCCMiner supports loading of the mined data as a separate functionality as well. The mining will create a directory <strong>“SoccMiner_Mined_Entities”</strong> that contains the granular attributes and comments in individual directories. By default, this directory will be available in the current directory of SoCCMiner program. The following command mines the project microsoft_appcenter-sampleapp-android for basic comment attributes.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="nb">bin</span><span class="o">/</span><span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">i</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">microsoft</span><span class="o">/</span><span class="n">appcenter</span><span class="o">-</span><span class="n">sampleapp</span><span class="o">-</span><span class="n">android</span> <span class="o">-</span><span class="n">lvl</span> <span class="n">comment</span>
 </pre></div>
 </div>
 <p>If multiple project repositores are to be mined, then the input should be ‘/home/user/repositories_to_be_mined’ directory containing all the project repositories to be mined.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="nb">bin</span><span class="o">/</span><span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">repositories_to_be_mined</span><span class="o">/</span> <span class="o">-</span><span class="n">lvl</span> <span class="n">comment</span> <span class="o">-</span><span class="n">mode</span> <span class="n">multiple</span>
 </pre></div>
 </div>
-<p>The mined output can be stored in a particular location using the “output” option. The above usage will store the SoCCMiner_Mined_Entities in the current directory of the soccminer program. To change this to another directory, output option can be used (output=’/home/user/another_directory_to_store_soccminer_mined_entities/’) while mining.</p>
+<p>The mined output can be stored in a particular location using the <strong>“output”</strong> option. The above usage will store the SoCCMiner_Mined_Entities in the current directory of the soccminer program. To change this to another directory, output option can be used (output=’/home/user/another_directory_to_store_soccminer_mined_entities/’) while mining.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="nb">bin</span><span class="o">/</span><span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">repositories_to_be_mined</span><span class="o">/</span> <span class="o">-</span><span class="n">lvl</span> <span class="n">comment</span> <span class="o">-</span><span class="n">mode</span> <span class="n">multiple</span> <span class="o">-</span><span class="n">output</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">output_location_to_store_soccminer_mining_output</span><span class="o">/</span>
 </pre></div>
 </div>
-<ul class="simple">
-<li><p><strong>Loading:</strong>
-The serialized data from the mining can be loaded using the “dl” (direct loading) option. The following command loads the microsoft_appcenter-sampleapp-android project’s data that has been mined for basic comments. <strong>Note:</strong> <em>It is important to use the same mining level with which the project has been serialized else, SoCCMiner will throw an error.</em> Here, the project has been mined at “comment” level and the same has been used for loading.</p></li>
-</ul>
+<p>The <strong>“lvl”</strong> (mining level) input option should be changed for mining the project repository/directory with other pipelines. The available mining level are <strong>“comment”</strong> for mining comments from a project repository, <strong>“comprehensive_comment”</strong> for mining comprehensive comment attributes, <strong>“project”</strong> for mining granular meta attributes such as name, line number, signature, etc., and source code metrics such as granular (package/class/method/enum/interface/static_block) LOC, class nested level etc., and <strong>“all”</strong> for mining all the attributes from the previous options.</p>
+</section>
+<section id="loading">
+<h3>Loading<a class="headerlink" href="#loading" title="Permalink to this headline"></a></h3>
+<p>The serialized data from the mining can be loaded using the <strong>“dl”</strong> (direct loading) option. The following command loads the microsoft_appcenter-sampleapp-android project’s data that has been mined for basic comments. <strong>Note:</strong> <em>It is important to use the same mining level with which the project has been serialized else, SoCCMiner will throw an error.</em> Here, the project has been mined at <strong>“comment”</strong> level and the same has been used for loading.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="nb">bin</span><span class="o">/</span><span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">dl</span> <span class="kc">True</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">soccminer</span><span class="o">/</span><span class="n">SoCCMiner_Mined_Entities</span><span class="o">/</span><span class="n">microsoft_appcenter</span><span class="o">-</span><span class="n">sampleapp</span><span class="o">-</span><span class="n">android</span> <span class="o">-</span><span class="n">lvl</span> <span class="n">comment</span>
 </pre></div>
 </div>
-</section>
-<section id="comprehensivecommentsattribute-pipeline">
-<h3>ComprehensiveCommentsAttribute Pipeline<a class="headerlink" href="#comprehensivecommentsattribute-pipeline" title="Permalink to this headline"></a></h3>
-<ul class="simple">
-<li><p><strong>Mining:</strong> For mining the comprehensive comments, the ComprehensiveCommentsAttribute pipeline is enable using the lvl (level) option.</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="nb">bin</span><span class="o">/</span><span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">repositories_to_be_mined</span><span class="o">/</span><span class="n">microsoft_appcenter</span><span class="o">-</span><span class="n">sampleapp</span><span class="o">-</span><span class="n">android</span> <span class="o">-</span><span class="n">lvl</span> <span class="n">comprehensive_comment</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p><strong>Loading:</strong> For loading,</p></li>
-</ul>
+<p>Notice that when <strong>“dl”</strong> option is set to <code class="docutils literal notranslate"><span class="pre">True</span></code> the input path contains the SoCCMiner generated output (i.e., the mined data in JSON format). Consider the following example, which loads the serialized data that has been mined at <strong>“comprehensive_comment”</strong> level.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="nb">bin</span><span class="o">/</span><span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">dl</span> <span class="kc">True</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">soccminer</span><span class="o">/</span><span class="n">SoCCMiner_Mined_Entities</span><span class="o">/</span><span class="n">microsoft_appcenter</span><span class="o">-</span><span class="n">sampleapp</span><span class="o">-</span><span class="n">android</span> <span class="o">-</span><span class="n">lvl</span> <span class="n">comprehensive_comment</span>
-</pre></div>
-</div>
-</section>
-<section id="javametaattribute-pipeline">
-<h3>JavaMetaAttribute Pipeline<a class="headerlink" href="#javametaattribute-pipeline" title="Permalink to this headline"></a></h3>
-<ul class="simple">
-<li><p><strong>Mining:</strong> For mining the project meta attributes, the repository is mined at “project” level.</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="nb">bin</span><span class="o">/</span><span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">repositories_to_be_mined</span><span class="o">/</span><span class="n">microsoft_appcenter</span><span class="o">-</span><span class="n">sampleapp</span><span class="o">-</span><span class="n">android</span> <span class="o">-</span><span class="n">lvl</span> <span class="n">project</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p><strong>Loading:</strong> For loading,</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="nb">bin</span><span class="o">/</span><span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">dl</span> <span class="kc">True</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">soccminer</span><span class="o">/</span><span class="n">SoCCMiner_Mined_Entities</span><span class="o">/</span><span class="n">microsoft_appcenter</span><span class="o">-</span><span class="n">sampleapp</span><span class="o">-</span><span class="n">android</span> <span class="o">-</span><span class="n">lvl</span> <span class="n">project</span>
-</pre></div>
-</div>
-</section>
-<section id="javaminer-pipeline">
-<h3>JavaMiner Pipeline<a class="headerlink" href="#javaminer-pipeline" title="Permalink to this headline"></a></h3>
-<ul class="simple">
-<li><p><strong>Mining:</strong> For mining all the attributes that were mined in the previous pipelines, the repository is mined at “all” level.</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="nb">bin</span><span class="o">/</span><span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">repositories_to_be_mined</span><span class="o">/</span><span class="n">microsoft_appcenter</span><span class="o">-</span><span class="n">sampleapp</span><span class="o">-</span><span class="n">android</span> <span class="o">-</span><span class="n">lvl</span> <span class="nb">all</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p><strong>Loading:</strong> For loading,</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="nb">bin</span><span class="o">/</span><span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">dl</span> <span class="kc">True</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">soccminer</span><span class="o">/</span><span class="n">SoCCMiner_Mined_Entities</span><span class="o">/</span><span class="n">microsoft_appcenter</span><span class="o">-</span><span class="n">sampleapp</span><span class="o">-</span><span class="n">android</span> <span class="o">-</span><span class="n">lvl</span> <span class="nb">all</span>
 </pre></div>
 </div>
 </section>
@@ -169,64 +122,25 @@ The serialized data from the mining can be loaded using the “dl” (direct loa
 <section id="api">
 <h2>API<a class="headerlink" href="#api" title="Permalink to this headline"></a></h2>
 <section id="id1">
-<h3>CommentsMetaAttribute Pipeline<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h3>
-<ul class="simple">
-<li><p><strong>Mining:</strong> For mining basic comment attributes, instantiate CommentsMiner as the following:</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cm</span> <span class="o">=</span> <span class="n">CommentsMiner</span><span class="p">(</span><span class="n">source_url</span><span class="o">=</span><span class="s1">&#39;/home/user/repositories_to_be_mined/microsoft_appcenter-sampleapp-android&#39;</span><span class="p">,</span> <span class="n">m_level</span><span class="o">=</span><span class="s1">&#39;comment&#39;</span><span class="p">)</span>
+<h3>Mining<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h3>
+<p>For mining basic comment attributes of the microsoft_appcenter-sampleapp-android project repository stored in the local directory, instantiate CommentsMiner as the following:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">soccminer</span> <span class="kn">import</span> <span class="n">CommentsMiner</span>
+
+<span class="n">cm</span> <span class="o">=</span> <span class="n">CommentsMiner</span><span class="p">(</span><span class="n">source_url</span><span class="o">=</span><span class="s1">&#39;/home/user/repositories_to_be_mined/microsoft_appcenter-sampleapp-android&#39;</span><span class="p">,</span> <span class="n">m_level</span><span class="o">=</span><span class="s1">&#39;comment&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<ul class="simple">
-<li><p><strong>Loading:</strong> For loading the mined data at “comment” level,</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cm</span> <span class="o">=</span> <span class="n">CommentsMiner</span><span class="p">(</span><span class="n">source_url</span><span class="o">=</span><span class="s1">&#39;/home/user/soccminer/SoCCMiner_Mined_Entities/microsoft_appcenter-sampleapp-android/&#39;</span><span class="p">,</span> <span class="n">m_level</span><span class="o">=</span><span class="s1">&#39;comment&#39;</span><span class="p">,</span> <span class="n">direct_load</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>Similar to commandline usage, the <strong>“m_level”</strong> (mining level) should be changed to mine the project directory/repository with the respective option from the available (<strong>“comment”</strong>, <strong>“comprehensive_comment”</strong>, <strong>“project”</strong>, <strong>“all”</strong>).</p>
+<p>For other attributes of CommentsMiner, refer CommentsMiner section.</p>
 </section>
 <section id="id2">
-<h3>ComprehensiveCommentsAttribute Pipeline<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h3>
-<ul class="simple">
-<li><p><strong>Mining:</strong> For mining the comprehensive comments, the ComprehensiveCommentsAttribute pipeline is enable using the m_level (mining level) option.</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cm</span> <span class="o">=</span> <span class="n">CommentsMiner</span><span class="p">(</span><span class="n">source_url</span><span class="o">=</span><span class="s1">&#39;/home/user/repositories_to_be_mined/microsoft_appcenter-sampleapp-android&#39;</span><span class="p">,</span> <span class="n">m_level</span><span class="o">=</span><span class="s1">&#39;comprehensive_comment&#39;</span><span class="p">)</span>
+<h3>Loading<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h3>
+<p>The mined attributes can be loaded for use in other applications/programs by setting the <strong>“direct_load”</strong> option as <code class="docutils literal notranslate"><span class="pre">True</span></code> and by using the appropriate mining level option with which the project directory/repository was mined.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">soccminer</span> <span class="kn">import</span> <span class="n">CommentsMiner</span>
+
+<span class="n">cm</span> <span class="o">=</span> <span class="n">CommentsMiner</span><span class="p">(</span><span class="n">source_url</span><span class="o">=</span><span class="s1">&#39;/home/user/soccminer/SoCCMiner_Mined_Entities/microsoft_appcenter-sampleapp-android/&#39;</span><span class="p">,</span> <span class="n">m_level</span><span class="o">=</span><span class="s1">&#39;comment&#39;</span><span class="p">,</span> <span class="n">direct_load</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<ul class="simple">
-<li><p><strong>Loading:</strong> For loading,</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cm</span> <span class="o">=</span> <span class="n">CommentsMiner</span><span class="p">(</span><span class="n">source_url</span><span class="o">=</span><span class="s1">&#39;/home/user/soccminer/SoCCMiner_Mined_Entities/microsoft_appcenter-sampleapp-android/&#39;</span><span class="p">,</span> <span class="n">m_level</span><span class="o">=</span><span class="s1">&#39;comprehensive_comment&#39;</span><span class="p">,</span> <span class="n">direct_load</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="id3">
-<h3>JavaMetaAttribute Pipeline<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h3>
-<ul class="simple">
-<li><p><strong>Mining:</strong> For mining the project meta attributes, the repository is mined at “project” level.</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cm</span> <span class="o">=</span> <span class="n">CommentsMiner</span><span class="p">(</span><span class="n">source_url</span><span class="o">=</span><span class="s1">&#39;/home/user/repositories_to_be_mined/microsoft_appcenter-sampleapp-android&#39;</span><span class="p">,</span> <span class="n">m_level</span><span class="o">=</span><span class="s1">&#39;project&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p><strong>Loading:</strong> For loading,</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cm</span> <span class="o">=</span> <span class="n">CommentsMiner</span><span class="p">(</span><span class="n">source_url</span><span class="o">=</span><span class="s1">&#39;/home/user/soccminer/SoCCMiner_Mined_Entities/microsoft_appcenter-sampleapp-android/&#39;</span><span class="p">,</span> <span class="n">m_level</span><span class="o">=</span><span class="s1">&#39;project&#39;</span><span class="p">,</span> <span class="n">direct_load</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="id4">
-<h3>JavaMiner Pipeline<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h3>
-<ul class="simple">
-<li><p><strong>Mining:</strong> For mining all the attributes that were mined in the previous pipelines, the repository is mined at “all” level.</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cm</span> <span class="o">=</span> <span class="n">CommentsMiner</span><span class="p">(</span><span class="n">source_url</span><span class="o">=</span><span class="s1">&#39;/home/user/repositories_to_be_mined/microsoft_appcenter-sampleapp-android&#39;</span><span class="p">,</span> <span class="n">m_level</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p><strong>Loading:</strong> For loading,</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cm</span> <span class="o">=</span> <span class="n">CommentsMiner</span><span class="p">(</span><span class="n">source_url</span><span class="o">=</span><span class="s1">&#39;/home/user/soccminer/SoCCMiner_Mined_Entities/microsoft_appcenter-sampleapp-android/&#39;</span><span class="p">,</span> <span class="n">m_level</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">direct_load</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>Notice to change the the <strong>“source_url”</strong> option with the path that contains the mined data. If there are multiple project directories at the <strong>“source_url”</strong> path, all of them will be loaded for use in other programs/applications.</p>
 </section>
 </section>
 </section>

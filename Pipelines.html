@@ -46,7 +46,16 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Pipelines</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#commentsmetaattribute-pipeline">CommentsMetaAttribute Pipeline</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#comprehensivecommentsattribute">ComprehensiveCommentsAttribute</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#javametaattribute">JavaMetaAttribute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#javametaattribute">JavaMetaAttribute</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#package-attributes"><strong>Package Attributes</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-attributes"><strong>File attributes</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#class-attributes"><strong>Class Attributes</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#enum-attributes"><strong>Enum Attributes</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#interface-attributes"><strong>Interface Attributes</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#method-attributes"><strong>Method Attributes</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#static-block-attributes"><strong>Static Block Attributes</strong></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#javaminer">JavaMiner</a></li>
 </ul>
 </li>
@@ -124,13 +133,109 @@
 </section>
 <section id="javametaattribute">
 <h2>JavaMetaAttribute<a class="headerlink" href="#javametaattribute" title="Permalink to this headline"></a></h2>
-<p>This pipeline mines the programming language construct attributes that constitutes a project. This is programming language specific. It mines a total of 30 attributes for all programming language constructs of a Java project including Package, File, Class, Interface, Method, Enumerator and, Static Block. The attributes typically include name, type (‘REGULAR’ or ‘DERIVED’), LOC (Lines of Code), signature, etc.,</p>
-<figure class="align-default" id="id3">
-<a class="reference internal image-reference" href="_static/project_attributes.png"><img alt="_static/project_attributes.png" src="_static/project_attributes.png" /></a>
-<figcaption>
-<p><span class="caption-text"><strong>A snapshot JavaMetaAttribute pipeline JSONs merged together for illustration</strong></span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
-</figcaption>
+<p>This pipeline mines the granular attributes of a project. Typically, this is programming language specific i.e., for every programming language the granularities (programming language constructs) will differ. At present, SoCCMiner supports only Java programming language, hence the granular attributes of Java project are mined through this JavaMetaAttribute pipeline. It mines a total of 30 attributes from Java project granularities including Package, File, Class, Interface, Method, Enumerator and, Static Block attributes. The attributes mined in this pipeline enable a unique feature that srcML cannot do. It enables calculating granularity level comments such as method, or class or interface, etc., along with the source code association with code comments. Further, these serve as the core granular identifier attributes that can be coupled with a host of other source code metrics from well established third party tools. Such holistic data enable SATD or Sentiment comments correlation study with the source code constructs (i.e., granularties of a project).</p>
+<section id="package-attributes">
+<h3><strong>Package Attributes</strong><a class="headerlink" href="#package-attributes" title="Permalink to this headline"></a></h3>
+<p>Package attributes 4 attributes mined for each package in a project.</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/package_attributes.png"><img alt="_images/package_attributes.png" src="_images/package_attributes.png" style="width: 994.4000000000001px; height: 69.85000000000001px;" /></a>
 </figure>
+<ul class="simple">
+<li><p><strong>Package_Name:</strong> Refers to the name of the package that has been mined.</p></li>
+<li><p><strong>Package_LOC:</strong> Refers to the LOC resulting from the sum of all the source files in the package that has been mined.</p></li>
+<li><p><strong>Package_Source_File:</strong> Refers to the name of the source file/s that are part of the package.</p></li>
+<li><p><strong>Package_Line_No:</strong> Indicates the specific line number in the source file/s containing the package statement.</p></li>
+</ul>
+</section>
+<section id="file-attributes">
+<h3><strong>File attributes</strong><a class="headerlink" href="#file-attributes" title="Permalink to this headline"></a></h3>
+<p>File attributes include 3 attributes mined for each source file, (i.e., .java file) in the project.</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/file_attributes.png"><img alt="_images/file_attributes.png" src="_images/file_attributes.png" style="width: 728.7500000000001px; height: 52.25000000000001px;" /></a>
+</figure>
+<ul class="simple">
+<li><p><strong>Source_File:</strong> Refers to the name of the source code file.</p></li>
+<li><p><strong>File_LOC:</strong> Refers to the LOC the source code file that has been mined.</p></li>
+<li><p><strong>File_Comments_Count:</strong> Indicates the total number of code comments that are present in the source code file.</p></li>
+</ul>
+</section>
+<section id="class-attributes">
+<h3><strong>Class Attributes</strong><a class="headerlink" href="#class-attributes" title="Permalink to this headline"></a></h3>
+<p>There are 8 attributes mined for each class present in the project. Of the 8 attributes, 4 are meta attributes (Name, Signature, Line_No, and Source_File) and 4 are source code metrics (LOC, Nested_Level, Specifier and Type).</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/class_attributes.png"><img alt="_images/class_attributes.png" src="_images/class_attributes.png" style="width: 765.6px; height: 97.9px;" /></a>
+</figure>
+<ul class="simple">
+<li><p><strong>Class_Name:</strong> Refers to the name of the class that has been mined.</p></li>
+<li><p><strong>Class_LOC:</strong> Refers to the LOC of the class.</p></li>
+<li><p><strong>Class_Source_File:</strong> Refers to the name of the source file in which the class is located.</p></li>
+<li><p><strong>Class_Line_No:</strong> Indicates the specific line number in the source file containing the class.</p></li>
+<li><p><strong>Class_Signature:</strong> Refers to the signature of the class including the specifier and the deriving/implementation clause if any. This class signature will be unique in the source file. Can be used as an unique identifier in the project when combined along with the source_file attribute.</p></li>
+<li><p><strong>Class_Nested_Level:</strong> Refers to the nested level of the class. <em>‘0’</em> refers base class and subsequent increase by a factor of 1 reflects the nesting level of the class that has been mined.</p></li>
+<li><p><strong>Class_Specifier:</strong> Refers to the access specifier of the mined class. If no specifier exists, it returns <em>‘NO_SPECIFIER’</em>.</p></li>
+<li><p><strong>Class_Type:</strong> Indicates the type of the class if <em>‘REGULAR’(BASE)</em>, <em>‘ANONYMOUS’</em>, <em>‘DERIVED’</em> or <em>‘GENERIC’</em> .</p></li>
+</ul>
+</section>
+<section id="enum-attributes">
+<h3><strong>Enum Attributes</strong><a class="headerlink" href="#enum-attributes" title="Permalink to this headline"></a></h3>
+<p>These include 4 attributes mined for each enum in the project.</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/enum_attributes.png"><img alt="_images/enum_attributes.png" src="_images/enum_attributes.png" style="width: 803.0000000000001px; height: 80.30000000000001px;" /></a>
+</figure>
+<ul class="simple">
+<li><p><strong>Enum_Name:</strong> Refers to the name of the enum that has been mined.</p></li>
+<li><p><strong>Enum_LOC:</strong> Refers to the LOC of the enum construct.</p></li>
+<li><p><strong>Enum_Source_File:</strong> Refers to the name of the source file in which enum is located.</p></li>
+<li><p><strong>Enum_Line_No:</strong> Indicates the specific line number in the source file containing the enum.</p></li>
+<li><p><strong>Enum_Signature:</strong> Refers to the signature of the enum, similar to class, this attribute can be used as an unique identifier for an enum when combined with source_file attribute.</p></li>
+<li><p><strong>Enum_Specifier:</strong> Refers to the access specifier of the mined enum construct. If no specifier exists, it returns <em>‘NO_SPECIFIER’</em>.</p></li>
+</ul>
+</section>
+<section id="interface-attributes">
+<h3><strong>Interface Attributes</strong><a class="headerlink" href="#interface-attributes" title="Permalink to this headline"></a></h3>
+<p>These include 6 attributes mined for each interface in the project.</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/interface_attributes.png"><img alt="_images/interface_attributes.png" src="_images/interface_attributes.png" style="width: 955.9000000000001px; height: 79.75px;" /></a>
+</figure>
+<ul class="simple">
+<li><p><strong>Interface_Name:</strong> Refers to the name of the interface that has been mined.</p></li>
+<li><p><strong>Interface_LOC:</strong> Refers to the LOC of the interface.</p></li>
+<li><p><strong>Interface_Source_File:</strong> Refers to the name of the source file in which the interface is located.</p></li>
+<li><p><strong>Interface_Line_No:</strong> Indicates the specific line number in the source file containing the interface.</p></li>
+<li><p><strong>Interface_Signature:</strong> Refers to the signature of the interface. Similar to the previous signature attribute, this can be used as an unique identifier in the project for an interface when combined along with the source_file attribute.</p></li>
+<li><p><strong>Interface_Specifier:</strong> Refers to the access specifier of the mined interface. If no specifier exists, it returns <em>‘NO_SPECIFIER’</em>.</p></li>
+</ul>
+</section>
+<section id="method-attributes">
+<h3><strong>Method Attributes</strong><a class="headerlink" href="#method-attributes" title="Permalink to this headline"></a></h3>
+<p>There are 9 attributes mined for each method present in the project.</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/method_attributes.png"><img alt="_images/method_attributes.png" src="_images/method_attributes.png" style="width: 847.5500000000001px; height: 110.55000000000001px;" /></a>
+</figure>
+<ul class="simple">
+<li><p><strong>Method_Name:</strong> Refers to the name of the method that has been mined.</p></li>
+<li><p><strong>Method_LOC:</strong> Refers to the LOC of the method.</p></li>
+<li><p><strong>Method_Source_File:</strong> Refers to the name of the source file in which the method is located.</p></li>
+<li><p><strong>Method_Line_No:</strong> Indicates the specific line number in the source file containing the method.</p></li>
+<li><p><strong>Method_Signature:</strong> Refers to the signature of the method that can be used as an unique identifier in a project. Such unique identifiers enable identifying the number of comments in a particular granularity, i.e, number of comments in a class or method, etc.,</p></li>
+<li><p><strong>Method_Category:</strong> Refers to the category of the method which can be either <em>‘CONSTRUCTOR’</em> or <em>‘FUNCTION’</em>.</p></li>
+<li><p><strong>Method_Specifier:</strong> Refers to the access specifier of the mined method. If no specifier exists, it returns <em>‘NO_SPECIFIER’</em>.</p></li>
+<li><p><strong>Method_Type:</strong> Indicates the type of the method if <em>‘REGULAR’</em>, or <em>‘GENERIC’</em>.</p></li>
+<li><p><strong>Method_Param_Count:</strong> Indicates the parameter count of a method, if none exists 0.</p></li>
+</ul>
+</section>
+<section id="static-block-attributes">
+<h3><strong>Static Block Attributes</strong><a class="headerlink" href="#static-block-attributes" title="Permalink to this headline"></a></h3>
+<p>These include the 3 attributes mined for each static block present in the project. Typically, static blocks do not have name or signature, hence the line_no along with the source_file attribute can be combined for uniquely identifying a static block.</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/static_block_attributes.png"><img alt="_images/static_block_attributes.png" src="_images/static_block_attributes.png" style="width: 918.5000000000001px; height: 55.550000000000004px;" /></a>
+</figure>
+<ul class="simple">
+<li><p><strong>Static_Block_LOC:</strong> Refers to the LOC of the static block.</p></li>
+<li><p><strong>Static_Block_Source_File:</strong> Refers to the name of the source file in which the static block is located.</p></li>
+<li><p><strong>Static_Block_Line_No:</strong> Indicates the specific line number in the source file containing the static block.</p></li>
+</ul>
+</section>
 </section>
 <section id="javaminer">
 <h2>JavaMiner<a class="headerlink" href="#javaminer" title="Permalink to this headline"></a></h2>

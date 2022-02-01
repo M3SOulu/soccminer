@@ -1,7 +1,17 @@
 **CommentsMiner**
 =================
 
-The CommentsMiner is the core object of SoCCMiner that gets populated in all the pipelines.
+The CommentsMiner is the core object of SoCCMiner that gets populated in all the pipelines. It has the following options,
+
+      *    **source_url:** Refers to the github repository url or local directory location for mining. For loading, it always refers to the local directory containing the mined JSON data.
+      *    **lang:** Refers to the programming language of the source code.  Default value is *'java'* now.
+      *    **m_level:** Refers to the mining level, can be one of *'comment'*, *'comprehensive_comment'*, *'project'*, and *'all'*. Default value is *'comment'*.
+      *    **direct_load:** Set to ``True`` for loading the already serialized data else ``False``. By default, it is set to ``False``.
+      *    **log:** Used for debugging. It can be *'DEBUG'*, *'INFO'* or *'NOLOG'*. By default, log will not be generated. Must be set to either *'INFO'* for brief trace information or *'DEBUG'* for elaborate execution trace. The log file will be generated in the current working directory.
+      *    **output_dir:** Used to set the local directory where the mined data should be serialized. By default, the serialized attributes will be available in the current working directory under the directory *'SoCCMiner_Mined_Entities'*.
+      *    **mode:** Refers to the mode with which SoCCMiner mines the source code. It can be *'single'* that indicate the source_url contains only one project directory for mining or *'multiple'* to indicated the source_url contains multiple project repositories as subdirectories under the source_url. If this option is not set to *'multiple'* where there are multiple project repositories as sub-directories in the source_url, then SoCCMiner will treat all the projects as a single project.
+
+
 
 CommentsMetaAttribute Pipeline
 ------------------------------
@@ -11,6 +21,10 @@ CommentsMetaAttribute Pipeline
 
 .. code-block:: python
    :linenos:   
+
+   from soccminer import CommentsMiner
+
+   cm = CommentsMiner(source_url='/home/user/soccminer/SoCCMiner_Mined_Entities/microsoft_appcenter-sampleapp-android/', m_level='comment', direct_load=True)
 
    for proj in cm.fetch_mined_comments():  # mined_proj_obj_list
        # fetch project meta info
@@ -57,6 +71,10 @@ ComprehensiveCommentsAttribute Pipeline
 
 .. code-block:: python
    :linenos:   
+
+   from soccminer import CommentsMiner
+
+   cm = CommentsMiner(source_url='/home/user/soccminer/SoCCMiner_Mined_Entities/microsoft_appcenter-sampleapp-android/', m_level='comprehensive_comment', direct_load=True)
 
     for proj in cm.fetch_mined_comment_attributes():  # mined_proj_obj_list
         # fetch project meta info
@@ -112,6 +130,10 @@ JavaMetaAttribute Pipeline
 
 .. code-block:: python
    :linenos:   
+
+    from soccminer import CommentsMiner
+
+    cm = CommentsMiner(source_url='/home/user/soccminer/SoCCMiner_Mined_Entities/microsoft_appcenter-sampleapp-android/', m_level='project', direct_load=True)
 
     for proj in cm.fetch_mined_project_meta():
         # fetch project meta info
@@ -182,6 +204,10 @@ JavaMiner Pipeline
 
 .. code-block:: python
    :linenos:   
+
+   from soccminer import CommentsMiner
+
+   cm = CommentsMiner(source_url='/home/user/soccminer/SoCCMiner_Mined_Entities/microsoft_appcenter-sampleapp-android/', m_level='all', direct_load=True)
 
    for proj in cm.fetch_mined_project_meta_and_comments():  # mined_proj_obj_list
        # fetch project meta info
