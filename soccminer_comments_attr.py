@@ -48,7 +48,7 @@ def demo(cm):
 ############# Main #############	
 # for mining source code
 # input directory contains Java repository/ies
-mining_obj = CommentsMiner(source_url='/home/murali/Downloads/pysoccer_test_data/microsoft_appcenter-sampleapp-android/', m_level='comprehensive_comment')
+mining_obj = CommentsMiner(source_url='/home/murali/Downloads/pysoccer_test_data/microsoft_appcenter-sampleapp-android/', m_level='comprehensive_comment', context_span=5)
 demo(mining_obj)
 
 # for loading already mined entites (i.e., passive loading) the input 
