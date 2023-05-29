@@ -59,7 +59,7 @@ Options:
 - log     - (--logging) Defines the logging level. Can be one of nolog(NOLOG), info(INFO), debug(DEBUG). By default, it is 'nolog'. For other options, the log file will be created in the current working directory.  
 - o       - (--output) Defines the output directory where the mined entities will be stored. By default, it is current working directory.
 - m       - (--mode) Defines SoCC-Miner execution mode, can be 'single' to mine single project directory (i.e., all files and directories within input directory will be treated as a single project), or can be 'multiple' to mine multiple project directories in which all sub-directories within the input directory will be treated as separate project directories.
-- cs       - (--context_span) Controls the length of the context span (in number of lines, values can be positive, for example, 1 or 5 or 10, etc.,) to be fetched for both preceding and succeeding context for source code context of a comment. 
+- cs       - (--context_span) Controls the length of the context span (in number of lines, values can be positive, for example, 1 or 5 or 10, etc.,) to be fetched for both preceding and succeeding source code context of a comment. 
             **NOTE:** For GitHub repository URLs, SoCC-Miner defaults to 'single' mode. SoCC-Miner expects an input directory that contains only project directory/ies as sub-directory/ies in 'multiple' mode.
 # Usage from API
 Refer scripts :
