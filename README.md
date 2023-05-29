@@ -37,7 +37,8 @@ $ pip3 install soccminer
 # Usage from commandline
 Usage:
 ````
-$ python3 bin/main.py -i /usr/local/project_repository_for_analysis/ 
+$ python3 bin/main.py -i /usr/local/project_repository_for_analysis/ -lvl all -o /usr/output_location_to_store_mined_data/ -cs 5
+
 ````
 Options:
 - i      - (--input) Defines the input to the tool. (**Mandatory argument**) Can be 'local_dir' containing project repositories as sub-directories or 'Git Repo URL'.  
@@ -56,9 +57,9 @@ Options:
                    If False, mines source code projects for comments, source code entities and their attributes according to the mining level input and then loads projects entities into respective pipelines. By default, it is set to False. 
   
 - log     - (--logging) Defines the logging level. Can be one of nolog(NOLOG), info(INFO), debug(DEBUG). By default, it is 'nolog'. For other options, the log file will be created in the current working directory.  
-                **NOTE:** Enabling log creates very huge log file for huge source code repositories. **Recommended enabling only for debugging** as it creates huge log files. Enable it for debugging after ensuring enough disk space is available (atleast 5GB for large to very large repositories with source files greater than 25000 in a project repository).
 - o       - (--output) Defines the output directory where the mined entities will be stored. By default, it is current working directory.
-- m       - (--mode) Defines SoCC-Miner execution mode, can be 'single' to mine single project directory (i.e., all files and directories within input directory will be treated as a single project), or can be 'multiple' to mine multiple project directories in which all sub-directories within the input directory will be treated as separate project directories. 
+- m       - (--mode) Defines SoCC-Miner execution mode, can be 'single' to mine single project directory (i.e., all files and directories within input directory will be treated as a single project), or can be 'multiple' to mine multiple project directories in which all sub-directories within the input directory will be treated as separate project directories.
+- cs       - (--context_span) Controls the length of the context span (in number of lines, values can be positive, for example, 1 or 5 or 10, etc.,) to be fetched for both preceding and succeeding context for source code context of a comment. 
             **NOTE:** For GitHub repository URLs, SoCC-Miner defaults to 'single' mode. SoCC-Miner expects an input directory that contains only project directory/ies as sub-directory/ies in 'multiple' mode.
 # Usage from API
 Refer scripts :
