@@ -7,6 +7,8 @@ import glob
 from soccminer.environment import Platform
 import traceback
 import gc
+# fix for same file
+import hashlib
 
 
 # check if it is a directory location
@@ -22,6 +24,13 @@ class SourceFiles:
             raise Exception("SoCCMiner failed due to invalid source location: {}".format(loc))
         self.files = []
         self.cd_file_xml_mapping_dict = {}
+
+    # fix for same file
+    @staticmethod
+    def get_hash_digest(file_path):
+        hash_object = hashlib.md5(file_path.encode())
+        return hash_object.hexdigest()
+
 
     def get_files(self):
         return self.files
@@ -61,12 +70,15 @@ class SourceFiles:
                 logging.debug("xml_file_name: {}".format(code_file))
                 xml_file_name = code_file.replace(self.loc, '')
                 srcml_xml_file = ""
+                # fix for same file
+                xml_file_name_hash = SourceFiles.get_hash_digest(code_file)
+                
                 if Platform.is_unix_platform():
                     xml_file_name = xml_file_name.split('/')[-1]
-                    srcml_xml_file = temp_dir_loc + "/" + os.path.splitext(xml_file_name)[0]+'.xml'
+                    srcml_xml_file = temp_dir_loc + "/" + os.path.splitext(xml_file_name)[0]+ xml_file_name_hash +'.xml'
                 elif Platform.is_windows_platform():
                     xml_file_name = xml_file_name.split('\\')[-1]
-                    srcml_xml_file = temp_dir_loc + "\\" + os.path.splitext(xml_file_name)[0]+'.xml'
+                    srcml_xml_file = temp_dir_loc + "\\" + os.path.splitext(xml_file_name)[0]+ xml_file_name_hash +'.xml'
 
                 logging.debug("To be converted AST file: {}".format(srcml_xml_file))
                 srcml_cd = None

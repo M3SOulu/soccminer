@@ -303,14 +303,11 @@ class JavaProjectMeta(ProjectMeta):
             if Platform.is_unix_platform():
                 src_file_dir = proj_dir + '/' + proj_dir.split("/")[-1] + '.json'
             elif Platform.is_windows_platform():
-                src_file_dir = proj_dir + '\\' + proj_dir.split("/")[-1] + '.json'
+                src_file_dir = proj_dir + '\\' + proj_dir.split("\\")[-1] + '.json'
 
             if not os.path.isfile(src_file_dir):
-                #print("Missing project_source_meta json.  Unable to load project. \n"
-                #                "Please check your input folder containing mined entities for project {}".format(self.get_project_name()))
                 exception_msg = "Missing project_source_meta json.  Unable to load project. \n " \
                                 "Please check your input folder containing mined entities for project {}".format(self.get_project_name())
-                #raise Exception(exception_msg)
                 return exception_msg
 
             construct_info = SerializeSoCCMiner.load_from_json_file(src_file_dir)
@@ -319,14 +316,10 @@ class JavaProjectMeta(ProjectMeta):
             #  since there will be only one src_file_info json for one project
             for item_to_load in src_file_and_proj_items:
                 if item_to_load not in construct_info[0]:
-                    #print(
-                    #    "Invalid json to load project. Does not contain {} for project {}".format(item_to_load, self.get_project_name()))
-                    #raise Exception(
-                    #    "Invalid json to load project. Does not contain {} for project {}".format(item_to_load, self.get_project_name()))
                     exception_msg = "Invalid json to load project. Does not contain {} for project {}".format(item_to_load, self.get_project_name())
                     return exception_msg
 
-            src_file_obj.loc = construct_info[0]['Entity_Project_Directory']
+            src_file_obj.loc = construct_info[0]['Entity_Project_Directory']  # location
             src_file_obj.files = construct_info[0]['Source_Files_List']
             src_file_obj.cd_file_xml_mapping_dict = construct_info[0]['Source_Xml_Mapping_Dict']
 
@@ -335,15 +328,10 @@ class JavaProjectMeta(ProjectMeta):
                                                 " does not match with serialized project name {}"
                             "".format(self.get_project_name(), construct_info[0]['Serialized_Project_Name']))
                 return exception_msg
-                #raise Exception("Corrupted JSON. Input Load_Project workflow's, Project Name {}  \n" \
-                #                                " does not match with serialized project name {}"
-                #            "".format(self.get_project_name(), construct_info[0]['Serialized_Project_Name']))
             elif miner_params['mining_level'] != construct_info[0]['Serialized_Mining_Level']:
                 exception_msg = ("Project Load failed as Load_Level ({}) does not match with serialized project's Mining_Level ({}) for project {}"
                       "".format(level_mapping_dict[miner_params['mining_level']], level_mapping_dict[construct_info[0]['Serialized_Mining_Level']], self.get_project_name()))
                 return exception_msg
-                #raise Exception("Project Load failed as Load_Level ({}) does not match with serialized project's Mining_Level ({}) for project {}"
-                #      "".format(level_mapping_dict[miner_params['mining_level']], level_mapping_dict[construct_info[0]['Serialized_Mining_Level']], self.get_project_name()))
 
             self.set_project_loc(construct_info[0]['Serialized_Project_KLOC'] * 1000)
             self.set_source_file_info(src_file_obj)
@@ -352,7 +340,12 @@ class JavaProjectMeta(ProjectMeta):
         if entity == "package" or entity == "project":
             # loading package details
             # Package info is required at all param levels as it is used to calculate project loc, KLOC
-            construct_info = SerializeSoCCMiner.load_from_json_file(package_attr_dir)
+            # construct_info = []
+            if entity == "package":
+                construct_info = SerializeSoCCMiner.load_package_from_json(package_attr_dir)
+            else:
+                construct_info = SerializeSoCCMiner.load_from_json_file(package_attr_dir)
+
             for package_info_dict in construct_info:
                 package_obj = PackageInfo()
                 package_obj.set_package_name(package_info_dict['Package_Name'])

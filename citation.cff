@@ -1,16 +1,9 @@
-cff-version: 1.2.0
-message: "If you use this tool, please cite it as below."
-authors:
-- family-names: "Sridharan"
-  given-names: "Murali"
-- family-names: "Mantyla"
-  given-names: "Mika"
-- family-names: "Claes"
-  given-names: "Maelick"
-- family-names: "Rantala"
-  given-names: "Leevi" 
-  title: "SoCCMiner"
-version: 0.0.28a1
-date-released: 2021-11-18
-url: "https://github.com/M3SOulu/soccminer"
-
+@INPROCEEDINGS{9796266,
+  author={Sridharan, Murali and Mäntylä, Mika and Claes, Maëlick and Rantala, Leevi},
+  booktitle={2022 IEEE/ACM 19th International Conference on Mining Software Repositories (MSR)}, 
+  title={SoCCMiner: A Source Code-Comments and Comment-Context Miner}, 
+  year={2022},
+  volume={},
+  number={},
+  pages={242-246},
+  doi={10.1145/3524842.3527998}}

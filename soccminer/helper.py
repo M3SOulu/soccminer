@@ -32,9 +32,15 @@ class TrackProgress:
 
         logging.info("track_ast_parsing_progress begins")
         if not os.path.isdir(processed_source_file_dir):
-            os.makedirs(processed_source_file_dir)
+            try:
+                os.makedirs(processed_source_file_dir)
+            except FileExistsError:
+                logging.debug("Directory {} already exists".format(processed_source_file_dir))
         if not os.path.isdir(error_file_dir):
-            os.makedirs(error_file_dir)
+            try:
+                os.makedirs(error_file_dir)
+            except FileExistsError:
+                logging.debug("Directory {} already exists".format(error_file_dir))
         processed_file_count = TrackProgress.fetch_file_count(processed_source_file_dir, 'json') + TrackProgress.fetch_file_count(error_file_dir, 'error')
         processed_file_count = 1 if processed_file_count == 0 else processed_file_count
         if os.path.isdir(processed_source_file_dir) and os.path.isdir(error_file_dir):
@@ -53,10 +59,10 @@ class TrackProgress:
                 #approx_eta = 0.0
                 #print('\r {} - Mining source files completed for {}/{}. Approx ETA for completion {} minutes \n'.format(project_name, processed_file_count, total_files, approx_eta), sep='', end='', flush=True)
             logging.info("Total valid files for progress tracking: {}".format(total_files))
-
+            thirty_min_proc_file_cnt = 0  
             while processed_file_count <= total_files:
-                if timer == 1800:
-                    if processed_file_count == initial_proc_count:
+                if timer == 2100:
+                    if processed_file_count == initial_proc_count or processed_file_count == thirty_min_proc_file_cnt:
                         logging.info("Unexpected behaviour process taking too long to mine a file, stopping mining process")
                         processed_file_count = total_files
                     timer = 0
@@ -73,6 +79,8 @@ class TrackProgress:
                     time.sleep(3)
                     processed_file_count = TrackProgress.fetch_file_count(processed_source_file_dir, 'json') + TrackProgress.fetch_file_count(error_file_dir, 'error')
                     timer += 3
+                    if timer == 1800:
+                        thirty_min_proc_file_cnt = processed_file_count
                     if timer == 3:
                         initial_proc_count = processed_file_count
                     logging.info("Fetching processed_file_count after sleep {}".format(processed_file_count))
@@ -260,6 +268,13 @@ class ASTHelper:
 
 
 class Utility:
+
+    @staticmethod
+    def get_abs_subdir(location):
+        if os.path.exists(location) and os.path.isdir(location):
+            return [f.path for f in os.scandir(location) if os.path.isdir(f)]
+        else:
+            return []
 
     @staticmethod
     def validate_entity_folder(url):

@@ -18,6 +18,37 @@ class SerializeSoCCMiner:
     attribute_json_file_list = [comments_meta_json, proj_and_comment_attr_json, java_proj_attr_json, comments_meta_json]
 
     @staticmethod
+    def collate_files(dir_loc):
+        construct_info = []
+        construct_info_dict = {}
+        file_name = None
+        json_files = SourceFiles(dir_loc)
+        json_files.fetch_source_files(dir_loc, 'json')
+        files = json_files.get_files()
+
+        if Platform.is_unix_platform():
+            dir_loc_items = dir_loc.split('/')
+            file_name = dir_loc + '/' + dir_loc_items[-2] + '_' + dir_loc_items[-1]
+        elif Platform.is_windows_platform():
+            dir_loc_items = dir_loc.split('\\')
+            file_name = dir_loc + '\\' + dir_loc_items[-2] + '_' + dir_loc_items[-1]
+
+        for json_file in files:
+            try:
+                fh = open(json_file, "r")
+                construct_info.append(ujson.load(fh))
+                fh.close()
+
+                os.remove(json_file)
+            except Exception as json_read_error:
+                error_message = traceback.format_exc()
+                logging.error("Load from serialized object failed: Failed to load file json file {}. Error: {}".format(json_file, error_message))
+                raise
+
+        #print("Serializing {}".format(file_name))
+        SerializeSoCCMiner.write_json_file(file_name, construct_info)
+
+    @staticmethod
     def write_json_file(file_name:str, json_dict:dict):
         fname = None
         logging.debug("write_json_file(): Serializing at {}".format(file_name))
@@ -38,6 +69,55 @@ class SerializeSoCCMiner:
             raise
 
     @staticmethod
+    def load_package_from_json(file_name: str):
+        files = []
+        construct_info = []
+        if validate_loc(file_name):
+            json_files = SourceFiles(file_name)
+            json_files.fetch_source_files(file_name, 'json')
+            files = json_files.get_files()
+        else:
+            if file_name.endswith('.json'):
+                files.append(file_name)
+            else:
+                # entity folders that does not exist
+                return construct_info
+        '''
+        print("total files: {}".format(len(files)))
+        for json_file in files:
+            try:
+                fh = open(json_file, "r")
+                print("reading json file {}".format(json_file))
+                constructs = ujson.load(fh)
+                if type(constructs) is not list:
+                    print("construct is not list but of type {}".format(type(constructs)))
+                    construct_info.append(constructs)
+                    fh.close()
+                else:
+                    fh.close()
+                    print("about to return constructs")
+                    return constructs
+            except Exception as json_read_error:
+                error_message = traceback.format_exc()
+                logging.error("Load from serialized object failed: Failed to load file json file {}. Error: {}".format(json_file, error_message))
+                raise
+            else:
+                return construct_info
+        '''    
+        for json_file in files:
+            try:
+                fh = open(json_file, "r")
+                construct_info.append(ujson.load(fh))
+                fh.close()
+            except Exception as json_read_error:
+                error_message = traceback.format_exc()
+                logging.error("Load from serialized object failed: Failed to load file json file {}. Error: {}".format(json_file, error_message))
+                raise
+        else:
+            return construct_info
+
+
+    @staticmethod
     def load_from_json_file(file_name: str):
         files = []
         construct_info = []
@@ -55,14 +135,19 @@ class SerializeSoCCMiner:
         for json_file in files:
             try:
                 fh = open(json_file, "r")
-                construct_info.append(ujson.load(fh))
-                fh.close()
+                constructs = ujson.load(fh)
+                if type(constructs) is not list:
+                    construct_info.append(constructs)
+                    fh.close()
+                else:
+                    fh.close()
+                    return constructs
             except Exception as json_read_error:
                 error_message = traceback.format_exc()
                 logging.error("Load from serialized object failed: Failed to load file json file {}. Error: {}".format(json_file, error_message))
                 raise
-        else:
-            return construct_info
+            else:
+                return construct_info
 
     @staticmethod
     def load_comment_info(comment_dir):

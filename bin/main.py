@@ -44,7 +44,7 @@ def is_existing_file(file_loc):
 
 
 def validate_cli(cl_args):
-    global local_inp_dir, inp_dir, level, load_proj_flag, log, programming_language, serialize_flag, output_dir, mode
+    global local_inp_dir, inp_dir, level, load_proj_flag, log, programming_language, serialize_flag, output_dir, mode, context_span
     local_inp_dir = cl_args.input
 
     # level comment - Basic Comment and Project Attributes, level comprehensive_comment - Comprehensive Comment Attributes
@@ -54,6 +54,7 @@ def validate_cli(cl_args):
     programming_language = cl_args.language.lower()
     load_proj_flag = cl_args.direct_load
     output_dir = cl_args.output
+    context_span = int(cl_args.context_span)
     if type(load_proj_flag) == str:
         if load_proj_flag.lower() == 'true':
             load_proj_flag = True
@@ -127,6 +128,11 @@ def validate_cli(cl_args):
     if programming_language not in ['java']:
         print("Issue with programming language input {}".format(programming_language))
         return False
+
+    if context_span < 1:
+        print("Issue with context span input, context span cannot be less than 1")
+        return False
+
     return True
 
 def demo_project(cm):
@@ -142,6 +148,7 @@ def demo_project(cm):
         print("Interface Count: {}".format(proj.get_interface_count()))
         print("Static Block Count: {}".format(proj.get_static_block_count()))
 
+
 def demo(cm):
     # Loads JavaMiner object for mining level 'all' that contains both project
     # meta and comprehensive comments
@@ -155,9 +162,7 @@ def demo(cm):
         print("Method Count: {}".format(proj.get_method_count()))
         print("Interface Count: {}".format(proj.get_interface_count()))
         print("Static Block Count: {}".format(proj.get_static_block_count()))
-        print("1234")
         for file_obj in proj.get_file_meta_attr():
-            print("3456")
             print("{}".format(type(file_obj)))
             print("File LOC: {}".format(file_obj.file_loc))
 
@@ -177,6 +182,38 @@ def demo(cm):
             print("Class LOC: {}".format(class_obj.class_loc))
             print("Class Java Source File #: {}".format(class_obj.class_source_file))
 
+            # fetch all comprehensive comments
+            for comprehensive_comments_obj in proj.get_comprehensive_comment_attr():
+                print("Comment content: {}".format(comprehensive_comments_obj.comment_text))
+                print("Comment line #: {}".format(comprehensive_comments_obj.comment_line_no))
+                print("Comment source file: {}".format(comprehensive_comments_obj.file_name))
+                print("Comment preceding code statement type: {}".format(comprehensive_comments_obj.preceding_node))
+                print("Comment preceding code: {}".format(comprehensive_comments_obj.preceding_code))
+                print("Comment succeeding code statement type: {}".format(comprehensive_comments_obj.succeeding_node))
+                print("Comment succeding code: {}".format(comprehensive_comments_obj.succeeding_code))
+                print("Comment parent identifier: {}".format(comprehensive_comments_obj.comment_parent_identifier))
+                print("Comment parent identifier trace: {}".format(comprehensive_comments_obj.comment_trace))
+                print("Comment category: {}".format(comprehensive_comments_obj.comment_category))
+                print("Comment is a first statement in: {}".format(comprehensive_comments_obj.first_element_in))
+                print("Comment is a last statement in: {}".format(comprehensive_comments_obj.last_element_in))
+                print("Comment type: {}".format(comprehensive_comments_obj.comment_type))
+
+            # fetch package level comprehensive comments
+            for comprehensive_comments_obj in proj.get_comprehensive_file_comment_attr():
+                print("Comment content: {}".format(comprehensive_comments_obj.comment_text))
+                print("Comment line #: {}".format(comprehensive_comments_obj.comment_line_no))
+                print("Comment source file: {}".format(comprehensive_comments_obj.file_name))
+                print("Comment preceding code statement type: {}".format(comprehensive_comments_obj.preceding_node))
+                print("Comment preceding code: {}".format(comprehensive_comments_obj.preceding_code))
+                print("Comment succeeding code statement type: {}".format(comprehensive_comments_obj.succeeding_node))
+                print("Comment succeding code: {}".format(comprehensive_comments_obj.succeeding_code))
+                print("Comment parent identifier: {}".format(comprehensive_comments_obj.comment_parent_identifier))
+                print("Comment parent identifier trace: {}".format(comprehensive_comments_obj.comment_trace))
+                print("Comment category: {}".format(comprehensive_comments_obj.comment_category))
+                print("Comment is a first statement in: {}".format(comprehensive_comments_obj.first_element_in))
+                print("Comment is a last statement in: {}".format(comprehensive_comments_obj.last_element_in))
+                print("Comment type: {}".format(comprehensive_comments_obj.comment_type))
+
 def demo_compre_comment(cm):
     # Loads ComprehensiveCommentsAttribute object for mining level 'comprehensive_comment' that contains
     # comprehensive comment attributes for all the entities.
@@ -193,216 +230,8 @@ def demo_compre_comment(cm):
         print("Total StaticBlock level comments: ", len(proj.get_comprehensive_static_block_comment_attr()))
 
 
-def demo_compre_val(cm):
-    succ_node_dict = {}
-    prev_node_dict = {}
-    granular_units = [
-    '{http://www.srcML.org/srcML/src}package',
-    '{http://www.srcML.org/srcML/src}function',
-    '{http://www.srcML.org/srcML/src}constructor',
-    '{http://www.srcML.org/srcML/src}class',
-    '{http://www.srcML.org/srcML/src}interface',
-    '{http://www.srcML.org/srcML/src}enum',
-    '{http://www.srcML.org/srcML/src}static']
-
-    package_ = [
-        '{http://www.srcML.org/srcML/src}package']
-    function_ = [
-        '{http://www.srcML.org/srcML/src}function']
-    constructor_ = [
-        '{http://www.srcML.org/srcML/src}constructor']
-    class_ = [
-        '{http://www.srcML.org/srcML/src}class']
-    interface_ = [
-        '{http://www.srcML.org/srcML/src}interface']
-    enum_ = [
-        '{http://www.srcML.org/srcML/src}enum']
-    static_ = [
-        '{http://www.srcML.org/srcML/src}static']
-
-    decl_expr_stmts = ['{http://www.srcML.org/srcML/src}decl_stmt',
-    '{http://www.srcML.org/srcML/src}expr_stmt']
-
-    decl_stmt = ['{http://www.srcML.org/srcML/src}decl_stmt']
-    expr_stmt = ['{http://www.srcML.org/srcML/src}expr_stmt']
-
-    conditional = ['{http://www.srcML.org/srcML/src}decision making',
-    '{http://www.srcML.org/srcML/src}if',
-    '{http://www.srcML.org/srcML/src}else',
-    '{http://www.srcML.org/srcML/src}switch']
-
-    loop = [
-    '{http://www.srcML.org/srcML/src}while',
-    '{http://www.srcML.org/srcML/src}for',
-    '{http://www.srcML.org/srcML/src}do']
-
-    jump = [
-    '{http://www.srcML.org/srcML/src}continue',
-    '{http://www.srcML.org/srcML/src}break']
-
-    exception = [
-    '{http://www.srcML.org/srcML/src}try',
-    '{http://www.srcML.org/srcML/src}throw',
-    '{http://www.srcML.org/srcML/src}catch',
-    '{http://www.srcML.org/srcML/src}finally']
-
-    file_ends = ['EOF','NA']
-    gran_units = 0
-    decl_expr = 0
-    cond = 0
-    lp = 0
-    jp = 0
-    excp = 0
-    fends = 0
-    oth = 0
-    cntr = 0
-    pckg = 0
-    func = 0
-    const = 0
-    cls = 0
-    intrfc = 0
-    enum = 0
-    static = 0
-    decl = 0
-    expr = 0
-    return_stmt = ['{http://www.srcML.org/srcML/src}return']
-
-    for proj in cm.fetch_mined_comment_attributes(): #mined_proj_obj_list
-        succ_node_dict[proj.proj_name] = []
-        prev_node_dict[proj.proj_name] = []
-        print("Len of compre_comments ",len(proj.get_comprehensive_comment_attr()))
-        # fetch all comprehensive comments
-        for comprehensive_comments_obj in proj.get_comprehensive_comment_attr():
-            succ_node_dict[proj.proj_name].append(comprehensive_comments_obj.succeeding_node)
-            prev_node_dict[proj.proj_name].append(comprehensive_comments_obj.preceding_node)
-
-        succ_dict = Counter(succ_node_dict[proj.proj_name])
-        gran_units = 0
-        decl_expr = 0
-        cond = 0
-        lp = 0
-        jp = 0
-        excp = 0
-        fends = 0
-        oth = 0
-        cntr = 0
-        pckg = 0
-        func = 0
-        const = 0
-        cls = 0
-        intrfc = 0
-        enum = 0
-        static = 0
-        decl = 0
-        expr = 0
-
-        for node in succ_node_dict[proj.proj_name]:
-            cntr+= 1
-            if node in granular_units:
-                gran_units += 1
-                if node in package_:
-                    pckg += 1
-                elif node in function_:
-                    func += 1
-                elif node in constructor_:
-                    const += 1
-                elif node in class_:
-                    cls += 1
-                elif node in interface_:
-                    intrfc += 1
-                elif node in enum_:
-                    enum += 1
-                elif node in static_:
-                    static += 1
-
-            elif node in decl_expr_stmts:
-                decl_expr += 1
-                if node in decl_stmt:
-                    decl += 1
-                elif node in expr_stmt:
-                    expr += 1
-            elif node in conditional:
-                cond += 1
-            elif node in loop:
-                lp += 1
-            elif node in jump:
-                jp += 1
-            elif node in exception:
-                excp += 1
-            elif node in file_ends:
-                fends += 1
-            else:
-                oth += 1
-        print("==========  {} =========".format(proj.proj_name))
-        print("succesive nodes details: Granular_Units:{}, Declaration_Expr_stmts:{}, "
-              "Conditional_Stmts:{}, Loops:{}, Jump:{}, Excep_Stmts:{}, File_Ends:{}, Others:{}, "
-              "Total:{}, cntr:{}".format(gran_units,decl_expr,cond,lp,jp,excp,fends,oth, (gran_units+decl_expr+cond+lp+jp+excp+fends+oth), cntr))
-        print("Package:{}, Function:{}, Constructor:{}, Class:{}, Interface:{}, Enum:{}, Static:{}, Total_Granularities:{}"
-              "".format(pckg,func,const,cls,intrfc,enum,static,(pckg+func+const+cls+intrfc+enum+static)))
-        print("Decl: {}, Expr:{}, all_decl_expr:{}".format(decl, expr, (decl + expr)))
-        gran_units = 0
-        decl_expr = 0
-        cond = 0
-        lp = 0
-        jp = 0
-        excp = 0
-        fends = 0
-        oth = 0
-        cntr = 0
-        pckg = 0
-        func = 0
-        const = 0
-        cls = 0
-        intrfc = 0
-        enum = 0
-        static = 0
-        decl = 0
-        expr = 0
-
-        for node in prev_node_dict[proj.proj_name]:
-            cntr+=1
-            if node in granular_units:
-                gran_units += 1
-                if node in package_:
-                    pckg += 1
-                elif node in function_:
-                    func += 1
-                elif node in constructor_:
-                    const += 1
-                elif node in class_:
-                    cls += 1
-                elif node in interface_:
-                    intrfc += 1
-                elif node in enum_:
-                    enum += 1
-                elif node in static_:
-                    static += 1
-            elif node in decl_expr_stmts:
-                decl_expr += 1
-                if node in decl_stmt:
-                    decl += 1
-                elif node in expr_stmt:
-                    expr += 1
-            elif node in conditional:
-                cond += 1
-            elif node in loop:
-                lp += 1
-            elif node in jump:
-                jp += 1
-            elif node in exception:
-                excp += 1
-            elif node in file_ends:
-                fends += 1
-            else:
-                oth += 1
-        print("preceding nodes details: Granular_Units:{}, Declaration_Expr_stmts:{}, "
-              "Conditional_Stmts:{}, Loops:{}, Jump:{}, Excep_Stmts:{}, File_Ends:{},  Others:{}, "
-              "Total:{}, cntr:{}".format(gran_units,decl_expr,cond,lp,jp,excp,fends,oth, (gran_units+decl_expr+cond+lp+jp+excp+fends+oth),cntr))
-        print("Package:{}, Function:{}, Constructor:{}, Class:{}, Interface:{}, Enum:{}, Static:{}, Total_Granularities:{}"
-              "".format(pckg,func,const,cls,intrfc,enum,static,(pckg+func+const+cls+intrfc+enum+static)))
-        print("Decl: {}, Expr:{}, all_decl_expr:{}".format(decl, expr, (decl + expr)))
 def validate_cli_args():
-    global inp_dir, m_level, load_proj, log_level, prog_lang, output_dir, mode
+    global inp_dir, m_level, load_proj, log_level, prog_lang, output_dir, mode, context_span
     # parse input arguments
     parser = argparse.ArgumentParser(prog='main.py', description='Source Code Comments miner')
     parser.add_argument("-i", "--input",
@@ -431,6 +260,8 @@ def validate_cli_args():
                              "NOTE: SoCC-Miner expects an input directory that contains only project directory/ies as sub-directory/ies in 'multiple' mode. \n")
                              #"'files' to mine individual source files that are not part of any project, all the individual files will be collectively treated as a single project. \n"
                              #"NOTE: SoCC-Miner expects an input directory that contains only project directory/ies as sub-directory/ies in 'multiple' mode. \n")
+    parser.add_argument("-cs", "--context_span", default=1,
+                        help="Length of the context span (in number of lines) to be fetched for both preceding and succeeding context for a source code context")
 
     if len(sys.argv) <= 1:
         parser.print_help()
@@ -444,6 +275,7 @@ def validate_cli_args():
     prog_lang = cl_args.language
     output_dir = cl_args.output
     mode = cl_args.mode
+    context_span = int(cl_args.context_span)
 
     ret_stat = validate_cli(cl_args)
     if not ret_stat:
@@ -453,7 +285,7 @@ def validate_cli_args():
 
 def main():
     global local_inp_dir, level, load_proj_flag, log, programming_language, output_dir
-    global inp_dir, m_level, load_proj, log_level, prog_lang, mode
+    global inp_dir, m_level, load_proj, log_level, prog_lang, mode, context_span
     project_name = None
 
     try:
@@ -470,7 +302,7 @@ def main():
         # Passing the args as rcvd from commandline without validation as there's a validation in the API call
         # However this validation here happens when invoked from commandline only
 
-        cm = CommentsMiner(inp_dir, prog_lang, m_level, load_proj, log_level, output_dir, mode)
+        cm = CommentsMiner(inp_dir, prog_lang, m_level, load_proj, log_level, output_dir, mode, context_span)
         if not load_proj_flag and cm.invalid_ing_arg_flag:
             print("Unable to mine the source code as SoccMiner did not execute due to invalid input argument.")
             sys.exit(1)
@@ -509,7 +341,10 @@ prog_lang = ""
 load_proj_flag = ""
 load_proj = ""
 mode = ""
+context_span = 0
 
 # Main function
 if __name__ == '__main__':
-    main()    
+    main()
+
+

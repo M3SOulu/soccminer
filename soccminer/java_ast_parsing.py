@@ -113,6 +113,7 @@ class XmlProperties:
         self.top_level_elements = []
         self.project_dir = None
         self.src_file_name = None
+        self.abs_src_file_name = None
         self.comments_counter = 0
         self.nodes = []
         self.tree = etree.ElementTree()
@@ -148,6 +149,7 @@ class XmlProperties:
         self.all_cmnts_cntr = 0
         self.project_name = None
         self.xml_file = xml_file
+        self.context_span=1
 
         # fetch the program parameters set in the driver module CommentsMiner
         ProcessParameter.fetch_program_parameters()
@@ -504,7 +506,7 @@ class XmlProperties:
         elif Platform.is_windows_platform():
             package_json_dir = self.project_dir + '\\' + entity_type + '\\attributes\\'
         if os.listdir(package_json_dir) != 0:
-            construct_info = SerializeSoCCMiner.load_from_json_file(package_json_dir)
+            construct_info = SerializeSoCCMiner.load_package_from_json(package_json_dir)
 
         for construct_info_dict in construct_info:
             if construct_info_dict['Package_Name'] == package_name or package_name == 'ANONYMOUS_PACKAGE':
@@ -515,8 +517,7 @@ class XmlProperties:
                 package_obj.set_package_line_no(construct_info_dict['Package_Line_No'])
                 self.existing_pckg_serialization_url = construct_info_dict['Package_Serialization_File_URL']
                 return package_obj
-            #elif package_name == 'ANONYMOUS_PACKAGE':
-            #    return PackageInfo()
+
         return None
 
     def fetch_project_comments_count(self):
@@ -527,11 +528,15 @@ class XmlProperties:
         del src_files
         return comment_count
 
-    def proc_java_ast_elements(self, proj_dir, src_file_name, xml_file_name, xml_file_num):
+    def proc_java_ast_elements(self, proj_dir, src_file_name, xml_file_name, xml_file_num, cntxt_span):
         self.project_dir = proj_dir
         self.xml_file_num = xml_file_num
         self.src_file_name = src_file_name
+        self.abs_src_file_name = src_file_name
+        self.context_span = cntxt_span
+
         self.package_instance = None
+
         if Platform.is_unix_platform():
             proj_dir = proj_dir[:-1] if proj_dir.endswith('/') else proj_dir
             self.project_name = proj_dir.split('/')[-1].replace("/", "")
@@ -541,7 +546,7 @@ class XmlProperties:
                 self.src_file_name = self.src_file_name[1:] if self.src_file_name.startswith(".") else self.src_file_name
         elif Platform.is_windows_platform():
             proj_dir = proj_dir[:-1] if proj_dir.endswith('\\') else proj_dir
-            self.project_name = proj_dir.split('/')[-1].replace("\\", "")
+            self.project_name = proj_dir.split('\\')[-1].replace("\\", "")
             if "\\" in self.src_file_name:
                 self.src_file_name = "\\".join(src_file_name.split(self.project_name + '\\')[1:]).replace("\\", ".")
                 self.src_file_name = self.src_file_name.replace("..", "." + self.project_name + ".")
@@ -1234,6 +1239,34 @@ class XmlProperties:
             else:
                 parent_instance.append_static_block_info(construct_instance)  # for Most often found in Class
 
+    def proc_context_span(self, comment_instance, prec_ele, succ_ele):
+        cmnt_src_file = self.abs_src_file_name
+        
+        # source code line preceding comment
+        prec_comment_line_no = self.fetch_element_line_no(prec_ele)
+        # source code line after comment
+        succ_comment_line_no = self.fetch_element_line_no(succ_ele)
+        prec_beginning_span=0
+        succ_end_span=0
+
+        src_fh = open(cmnt_src_file, "r", encoding="utf-8")
+        file_lines=src_fh.readlines()
+        total_lines = len(file_lines)
+
+        if self.context_span > 1:
+            if prec_comment_line_no - self.context_span - 1 >= 0:
+                prec_beginning_span = prec_comment_line_no - self.context_span - 1
+            else:
+                prec_beginning_span = 0
+
+            if succ_comment_line_no + self.context_span <= total_lines:
+                succ_end_span = succ_comment_line_no + self.context_span
+            else:
+                succ_end_span = total_lines
+
+            comment_instance.set_preceding_code(file_lines[prec_beginning_span:self.context_span+prec_beginning_span])
+            comment_instance.set_succeeding_code(file_lines[succ_comment_line_no:succ_end_span])
+
     def fetch_succeeding_element(self, comment_instance, ele):
         try:
             if self.get_next_element(ele) is None:
@@ -1250,7 +1283,7 @@ class XmlProperties:
                         if ele_for_src_cd is not None:
                             self.logger.debug("***e Comment Next element- (Next to assoc parent element's parent): {} at line {}".format(ele_for_src_cd,self.fetch_element_line_no(ele_for_src_cd)))
                             comment_instance.set_succeeding_element(ele_for_src_cd)  # contains the xml element; input for succeeding code
-                            comment_instance.set_succeeding_node(self.get_element_tag(ele_for_src_cd))  # contains the name (or tag)
+                            comment_instance.set_succeeding_node(self.get_element_tag(ele_for_src_cd).replace('{http://www.srcML.org/srcML/src}',''))  # contains the name (or tag)
                         else:
                             comment_instance.set_last_element_in("FILE")
                             comment_instance.set_succeeding_code("NA")
@@ -1261,7 +1294,7 @@ class XmlProperties:
                         self.logger.debug("***f Comment Next element- (Next to assoc parent element): {} at line {}".format(ele_for_src_cd,
                                       self.fetch_element_line_no(ele_for_src_cd)))
                         comment_instance.set_succeeding_element(ele_for_src_cd)
-                        comment_instance.set_succeeding_node(self.get_element_tag(ele_for_src_cd))
+                        comment_instance.set_succeeding_node(self.get_element_tag(ele_for_src_cd).replace('{http://www.srcML.org/srcML/src}',''))
 
                 else:
                     comment_instance.set_last_element_in("FILE")
@@ -1280,7 +1313,7 @@ class XmlProperties:
                                                                  self.fetch_element_line_no(ele_for_src_cd),
                                                                  len(list(ele_for_src_cd))))
                 comment_instance.set_succeeding_element(ele_for_src_cd)
-                comment_instance.set_succeeding_node(self.get_element_tag(ele_for_src_cd))
+                comment_instance.set_succeeding_node(self.get_element_tag(ele_for_src_cd).replace('{http://www.srcML.org/srcML/src}',''))
         except Exception as ex:
             self.logger.error("Unexpected error in fetching succeeding element {} {}".format(sys.exc_info()[0], ex))
             raise
@@ -1295,7 +1328,7 @@ class XmlProperties:
                 # since first element in construct/block, the construct/block is set as the preceding element, as
                 # it will be invalid to fetch the previous element to the construct/block and set it as preceding element
                 comment_instance.set_preceding_element(assoc_parent_ele_prev)
-                comment_instance.set_preceding_node(self.get_element_tag(assoc_parent_ele_prev))
+                comment_instance.set_preceding_node(self.get_element_tag(assoc_parent_ele_prev).replace('{http://www.srcML.org/srcML/src}',''))
             else:
                 comment_instance.set_first_element_in("FILE")
                 comment_instance.set_comment_category("HEADER")
@@ -1307,7 +1340,7 @@ class XmlProperties:
             self.logger.debug("Comment Previous element 2: ".format(prev_ele))
             comment_instance.set_first_element_in("NA")
             comment_instance.set_preceding_element(prev_ele)
-            comment_instance.set_preceding_node(self.get_element_tag(prev_ele))
+            comment_instance.set_preceding_node(self.get_element_tag(prev_ele).replace('{http://www.srcML.org/srcML/src}',''))
 
     def identify_parent(self, element):
         try:
@@ -1577,7 +1610,9 @@ class XmlProperties:
         # comment text attribute
         if self.fetch_element_line_no(element) in self.consecutive_comment_dict:
             consecutive_text = "" + self.get_text(element)
-            for consecutive_comment_ele_line in self.processed_comment_dict:
+            # The second half of the loop includes fix to remove comments at non consecutive line nos
+            for consecutive_comment_ele_line in self.processed_comment_dict \
+                    and self.consecutive_comment_dict[self.fetch_element_line_no(element)]:
                 consecutive_text += "\n" + self.get_text(self.processed_comment_dict[consecutive_comment_ele_line])
             comment_instance.set_comment_text(consecutive_text)
         else:
@@ -1606,20 +1641,31 @@ class XmlProperties:
             self.logger.debug("Setting comment succeeding element, code for comment at line {} {}".format(comment_line_no, len(list(self.root))))
             # last element in, succeeding element, succeeding code
             # if consecutive comments, pass the first and last comment for fetching preceding and succeeding element
+            contxt_succ_ele=None
+            contxt_prec_ele=None
             if self.consecutive_comment_last is not None:
                 self.fetch_succeeding_element(comment_instance, self.consecutive_comment_last)
+                contxt_succ_ele=self.consecutive_comment_last
             else:
                 self.fetch_succeeding_element(comment_instance, element)
+                contxt_succ_ele=element
             self.logger.debug("Setting comment preceding element, code for comment at line {} {}".format(comment_line_no, len(list(self.root))))
             if self.consecutive_comment_first is not None:
                 self.fetch_preceding_element(comment_instance, self.consecutive_comment_first)
+                contxt_prec_ele=self.consecutive_comment_first
             else:
                 self.fetch_preceding_element(comment_instance, element)
-            # succeeding code - must be invoked after setting succeeding element
-            srcml_obj = SourceML()
-            comment_instance.set_succeeding_code(srcml_obj.fetch_code_from_srcml(copy(comment_instance.get_succeeding_element())))
-            # preceding code - must be invoked after setting preceding element
-            comment_instance.set_preceding_code(srcml_obj.fetch_code_from_srcml(copy(comment_instance.get_preceding_element())))
+                contxt_prec_ele=element
+
+            if self.context_span == 1:
+                # succeeding code - must be invoked after setting succeeding element
+                srcml_obj = SourceML()
+
+                comment_instance.set_succeeding_code(srcml_obj.fetch_code_from_srcml(copy(comment_instance.get_succeeding_element())))
+                # preceding code - must be invoked after setting preceding element
+                comment_instance.set_preceding_code(srcml_obj.fetch_code_from_srcml(copy(comment_instance.get_preceding_element())))
+            else:
+                self.proc_context_span(comment_instance, contxt_prec_ele, contxt_succ_ele)
 
         self.create_dir(self.project_comments_dir)
         self.logger.debug("Comments Directory: {}".format(self.project_comments_dir))
@@ -1657,7 +1703,7 @@ class XmlParsing:
         gc.collect()
 
     @staticmethod
-    def ast_parsing_multiprocessing(src_file, xml_file, proj_dir, xml_file_number, exception_obj, log_level):
+    def ast_parsing_multiprocessing(src_file, xml_file, proj_dir, xml_file_number, cntxt_span, exception_obj, log_level):
         source_ast_parser_obj = XmlProperties(xml_file)
 
         # create exception dir
@@ -1676,7 +1722,7 @@ class XmlParsing:
             source_ast_parser_obj.tree = etree.parse(xml_file)
             source_ast_parser_obj.root = source_ast_parser_obj.get_root()
             source_ast_parser_obj.set_unit_element()
-            source_ast_parser_obj.proc_java_ast_elements(proj_dir, src_file, xml_file, xml_file_number)
+            source_ast_parser_obj.proc_java_ast_elements(proj_dir, src_file, xml_file, xml_file_number, cntxt_span)
         except Exception as ast_unknown_exception:
             project_name = ""
             exception_dir = ''

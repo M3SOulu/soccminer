@@ -33,6 +33,7 @@ class CommentsMiner:
     load_project = None
     output_path = None
     mode = None
+    context_span = None
     soccminer_cfg_file = None
 
     @staticmethod
@@ -74,6 +75,10 @@ class CommentsMiner:
     @staticmethod
     def set_mode(mode):
         CommentsMiner.mode = mode
+
+    @staticmethod
+    def set_context_span(context_span):
+        CommentsMiner.context_span = context_span
 
     @staticmethod
     def validate_soccminer_dir_structure(proj_dir):
@@ -151,7 +156,7 @@ class CommentsMiner:
                     return False
         return True
 
-    def __init__(self, source_url, lang: str='java', m_level: str ='comment', direct_load=False, log: str = "nolog", output_dir: str =os.getcwd(), mode: str ='single'):
+    def __init__(self, source_url, lang: str='java', m_level: str ='comment', direct_load=False, log: str = "nolog", output_dir: str =os.getcwd(), mode: str ='single', context_span: int = 1):
         self.url = source_url
         if Platform.is_unix_platform():
             CommentsMiner.soccminer_cfg_file = os.getcwd() + '/' + 'soccminer.cfg'
@@ -163,8 +168,9 @@ class CommentsMiner:
         self.log = log
         self.output_dir = output_dir
         self.mode = mode
+        self.context_span = int(context_span)
         self.invalid_ing_arg_flag = False
-        if not self.validate_args(self.url, lang, m_level, direct_load, log, output_dir, mode):
+        if not self.validate_args(self.url, lang, m_level, direct_load, log, output_dir, mode, context_span):
             print("Exiting due to invalid arguments.")
             logging.info("Exiting due to invalid arguments.")
             self.invalid_ing_arg_flag = True
@@ -203,6 +209,7 @@ class CommentsMiner:
         CommentsMiner.set_log_inp(self.log)
         CommentsMiner.set_output_inp(self.output_dir)
         CommentsMiner.set_mode(self.mode)
+        CommentsMiner.set_context_span(self.context_span)
         CommentsMiner.save_program_parameters()
         logging.debug("Config file created with program parameters")
 
@@ -219,7 +226,7 @@ class CommentsMiner:
                 if not self.invalid_ing_arg_flag:
                     logging.info("Project mining successful")
                     print("Project mining successful")
-                    self.load_after_mining()
+                    #self.load_after_mining()
                 else:
                     print("Mining unsuccessful")
         elif self.mining_level != 0 and self.load_project:
@@ -487,6 +494,12 @@ class CommentsMiner:
                         print("Mined Entities for project {} are stored at {}".format(project_name, proj_dir))
                         logging.info("Mined Entities for project {} are stored at {}".format(project_name, proj_dir))
 
+                        # convert multiple json files into one json per directory
+                        print("project dir location while fetching mining status",proj_dir)
+                        for granular_subdir in Utility.get_abs_subdir(proj_dir):  # get granular dirs of the project
+                            for subdir in Utility.get_abs_subdir(granular_subdir):  # attributes and comments dir path if exists
+                                SerializeSoCCMiner.collate_files(subdir)
+
                     if project_name in self.exception_obj.warning_dict:
                         if self.exception_obj.warning_dict[project_name]:
                             logging.warning("Potential Invalid Source Code Files for project {}"
@@ -499,7 +512,7 @@ class CommentsMiner:
                 self.exception_obj.update_exception_message(project_name, error_message)
                 continue
 
-    def validate_args(self, input, programming_language, mining_level, load_proj_flag, log, output_dir, mode):
+    def validate_args(self, input, programming_language, mining_level, load_proj_flag, log, output_dir, mode, context_span):
         # level 'comment' - Basic Comment attributes
         # level 'comprehensive_comment' - Comprehensive Comment Attributes
         # level 'project' - Project Meta Attributes,
@@ -600,6 +613,13 @@ class CommentsMiner:
             return False
         else:
             self.lang = programming_language
+
+        if context_span < 1:
+            print("Issue with context span, cannot be less than 1 {}".format(context_span))
+            self.invalid_ing_arg_flag = True
+            return False
+        else:
+            self.context_span = context_span
 
         if Platform.is_unix_platform():
             self.output_dir = output_dir[:-1] if output_dir.endswith('/') else output_dir
@@ -717,14 +737,14 @@ class CommentsMiner:
                                 # Source Code Parsing
                                 process = Process(target=XmlParsing.ast_parsing_multiprocessing,
                                                   args=(xml_file, src_files.cd_file_xml_mapping_dict[xml_file],
-                                                        self.project_directory, file_cntr, self.exception_obj, self.log))
+                                                        self.project_directory, file_cntr, self.context_span, self.exception_obj, self.log))
                                 process.start()
                                 process.join()
 
                             except Exception as proc_files_ex:
                                 if self.log != 0:
                                     logging.error(
-                                        "CM: Error while processing source code file {} {} {}".format(xml_file, sys.exc_info()[0],
+                                        "SoCCMiner: Error while processing source code file {} {} {}".format(xml_file, sys.exc_info()[0],
                                                                                                  proc_files_ex))
                                 error_message = traceback.format_exc()
                                 self.exception_obj.update_exception_message(project_name, error_message)
@@ -1066,6 +1086,7 @@ class CommentsMiner:
                 :rtype: list
         """
         proj_comments_main_attr_obj_list = []
+        print(len(self.proj_comments_main_attr_obj_list))
         if len(self.proj_comments_main_attr_obj_list) > 0 and (CommentsMiner.mining_level == 1):
             if CommentsMiner.lang == 'java':
                 return self.proj_comments_main_attr_obj_list
